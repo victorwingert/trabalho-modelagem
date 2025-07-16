@@ -1,67 +1,33 @@
-// Register.jsx
+// src/App.jsx
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
-// O componente recebe uma função para alternar de volta para a tela de login
-function Register({ onToggle }) {
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+// 1. Importa os componentes de página da pasta 'pages'
+import LoginPage from './pages/Login';
+import RegisterPage from './pages/Register';
+// No futuro, você pode adicionar outras páginas aqui
+// import DashboardPage from './pages/Dashboard';
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log('Enviando dados de registro:', { nome, email, password });
-    // Aqui você chamaria seu serviço de API para cadastrar o usuário
-    // A API no backend receberia a senha, criaria o hash e salvaria no banco
-  };
+import './App.css'; // Estilos do formulário
 
+function App() {
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit}>
-        <h1>Criar Conta</h1>
-        <div className="input-group">
-          <label htmlFor="nome">Nome Completo</label>
-          <input
-            type="text"
-            id="nome"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            required
-            placeholder="Seu nome completo"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="seuemail@exemplo.com"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="password">Senha</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Crie uma senha forte"
-          />
-        </div>
-        <button type="submit" className="submit-button">
-          Registrar
-        </button>
-      </form>
-      <div className="toggle-link">
-        Já tem uma conta?{' '}
-        <button onClick={onToggle}>Faça Login</button>
-      </div>
-    </div>
+    // 2. 'Routes' é o container para todas as suas rotas
+    <Routes>
+      {/* Rota inicial: redireciona para a página de login */}
+      <Route path="/" element={<Navigate to="/login" />} />
+
+      {/* Rota para a página de login */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Rota para a página de registro */}
+      <Route path="/register" element={<RegisterPage />} />
+
+      {/* Exemplo de rota futura para o dashboard (protegida) */}
+      {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
+    </Routes>
   );
 }
 
-export default Register;
+export default App;

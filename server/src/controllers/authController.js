@@ -1,29 +1,37 @@
+// server/src/controllers/authController.js
+
 const bcrypt = require('bcrypt');
-const Usuario = require('../models/Usuario'); // Seu modelo de usuário
+// Importa o novo modelo 'Registro'
+const Registro = require('../models/Registro');
 
-exports.cadastrar = async (req, res) => {
+// Função para registrar um novo usuário
+exports.register = async (req, res) => {
   try {
-    const { nome, email, senha } = req.body;
+    // Agora esperamos 'usuario' e 'senha' do corpo da requisição
+    const { usuario, senha } = req.body;
 
-    // 1. Define o "custo" do hash (salt rounds). 10 é um bom padrão.
+    // Verifica se o usuário já existe
+    const usuarioExistente = await Registro.findOne({ where: { Usuario: usuario } });
+    if (usuarioExistente) {
+      return res.status(400).json({ message: 'Este usuário já está cadastrado.' });
+    }
+
+    // Cria o hash da senha
     const saltRounds = 10;
-
-    // 2. Gera o hash da senha de forma assíncrona
     const senhaHash = await bcrypt.hash(senha, saltRounds);
 
-    // 3. Salva o usuário no banco com a SENHA HASHED
-    const novoUsuario = await Usuario.create({
-      nome,
-      email,
-      senha: senhaHash, // <-- MUITO IMPORTANTE: Salve o hash, não a senha original
+    // Cria o registro no banco de dados com os campos corretos
+    await Registro.create({
+      Usuario: usuario,
+      Senha: senhaHash,
+      // O Nivel_Acesso usará o valor padrão 'usuario' definido no model
     });
 
-    // Não retorne a senha hashed na resposta por segurança
-    novoUsuario.senha = undefined; 
-
-    res.status(201).json({ message: "Usuário criado com sucesso!", usuario: novoUsuario });
+    // Envia uma resposta de sucesso
+    res.status(201).json({ message: 'Usuário registrado com sucesso!' });
 
   } catch (error) {
-    res.status(500).json({ message: "Erro ao criar usuário.", error });
+    console.error('Erro no registro:', error);
+    res.status(500).json({ message: 'Ocorreu um erro no servidor.' });
   }
 };

@@ -1,17 +1,15 @@
-// main.jsx (ou index.jsx)
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // 1. Importa o BrowserRouter
 
-// Importa os estilos globais
+import App from './App';
 import './index.css';
 
-// Importa o componente principal da aplicação
-import App from './App';
-
-// Renderiza a aplicação no elemento com id 'root' do seu index.html
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    {/* 2. Envolve o componente App com o BrowserRouter */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );
