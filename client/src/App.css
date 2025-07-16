@@ -1,42 +1,68 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* App.css */
+
+/* Estiliza o container do formulário de login */
+.login-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Estiliza o título do formulário */
+.login-container h1 {
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 28px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Container para cada grupo de input (label + input) */
+.input-group {
+  margin-bottom: 20px;
+  text-align: left;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Estiliza as labels */
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 600;
 }
 
-.card {
-  padding: 2em;
+/* Estiliza os campos de input */
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
 }
 
-.read-the-docs {
-  color: #888;
+/* Efeito de foco no input */
+.input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Estiliza o botão de login */
+.login-button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #667eea;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Efeito hover no botão */
+.login-button:hover {
+  background-color: #5a6fd0;
 }
