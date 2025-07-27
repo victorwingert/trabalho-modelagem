@@ -1,68 +1,109 @@
-/* App.css */
-
-/* Estiliza o container do formulário de login */
-.login-container {
-  background-color: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
+/*----------------------------LOGIN------------------------*/
+.conteudo-Login {
+  display: flex;
+  padding: 7vh 8vh;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4vh;
+  box-shadow: 0 0 1vh #003465, 0 0 1vh #484b4a;
+  background: #000;
 }
 
-/* Estiliza o título do formulário */
-.login-container h1 {
-  margin-bottom: 24px;
-  color: #333;
-  font-size: 28px;
+
+.conteudo-Login h1 {
+  color: #ffffff;
+  font-family: Roboto;
+  font-size: 6vh;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  padding-bottom: 5vh;
 }
 
-/* Container para cada grupo de input (label + input) */
-.input-group {
-  margin-bottom: 20px;
-  text-align: left;
+.imagem-Login{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 6vh;
 }
 
-/* Estiliza as labels */
-.input-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 600;
+.imagem-Login img{
+  width: 80%;
+}
+.conteudoPai-Login{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2vh;
 }
 
-/* Estiliza os campos de input */
-.input-group input {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
+.input-Login {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-/* Efeito de foco no input */
-.input-group input:focus {
+.input-Login label {
+  color: #BCBEC0;
+  font-family: Roboto;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.input-Login input {
+  display: flex;
+  width: 250px;
+  height: 32px;
+  padding: 16px;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 5px;
+  border: 0.2vh solid #003465;
+  background: #ffffff;
+  gap: 1vh;
+  color: black;
+}
+
+.input-Login input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #192149;
 }
 
-/* Estiliza o botão de login */
-.login-button {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 8px;
-  background-color: #667eea;
-  color: white;
+.botao-Login {
+  all: unset;
+  display: flex;
+  width: 250px;
+  height: 42px;
+  margin: 4vh 0vh 4vh 0vh;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  background: #003465;
+  color: #FFF;
+  font-family: Roboto;
   font-size: 16px;
-  font-weight: bold;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+    transition: 0.5s;
+
 }
 
-/* Efeito hover no botão */
-.login-button:hover {
-  background-color: #5a6fd0;
+.botao-Login:hover {
+  background-color: #192149;
+  transform: scale(105%);
+}
+
+.indicaSindico-Login{
+  color: #FFF;
+text-align: center;
+font-family: Rubik;
+font-size: 9.96px;
+font-style: normal;
+font-weight: 200;
+line-height: normal;
 }
