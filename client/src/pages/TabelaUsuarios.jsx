@@ -10,8 +10,11 @@ function TabelaUsuariosPage() {
   // Simula busca no banco de dados
   useEffect(() => {
     const dadosMock = [
-      { id: 1, nome: 'João', bloco: 'A', apartamento: '101' },
-      /*{ id: 2, nome: 'Maria', bloco: 'B', apartamento: '202' },*/
+      { id: 1, nome: 'Dara', bloco: 'A', apartamento: '101' },
+      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
+      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
+      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
+      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
     ];
 
     setTimeout(() => {
@@ -73,8 +76,11 @@ function TabelaUsuariosPage() {
           
 
           <div className='conteudo-tabelaUsuarios'>
-            <div className='superior-tabelaUsuarios'></div>
-            <table  style={{ marginTop: '10px' }}>
+<div className="pesquisa-tabelaUsuarios">
+  <input type="text" placeholder="🔍 Search" />
+  <button>CRIAR</button>
+</div>
+            <table className='tabela-usuarios'>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -100,9 +106,14 @@ function TabelaUsuariosPage() {
               </tbody>
             </table>
 
-            <div className='paginacao-tabelaUsuarios'>
-
+            <div className="paginacao-tabelaUsuarios">
+              <button>{'<'}</button>
+              <button className="ativo">1</button>
+              <button>2</button>
+              <button>3</button>
+              <button>{'>'}</button>
             </div>
+
 
           </div>
         </div>
@@ -112,6 +123,3 @@ function TabelaUsuariosPage() {
 }
 
 export default TabelaUsuariosPage;
-
-
-
