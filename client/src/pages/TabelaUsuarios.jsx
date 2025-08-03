@@ -10,11 +10,11 @@ function TabelaUsuariosPage() {
   // Simula busca no banco de dados
   useEffect(() => {
     const dadosMock = [
-      { id: 1, nome: 'Dara', bloco: 'A', apartamento: '101' },
-      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
-      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
-      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
-      { id: 2, nome: 'Dara', bloco: 'B', apartamento: '202' },
+      { id: 1, nome: 'seven9', bloco: 'A', apartamento: '101' },
+      { id: 2, nome: '7nine', bloco: 'B', apartamento: '202' },
+      { id: 2, nome: 'sevenin', bloco: 'B', apartamento: '202' },
+      { id: 2, nome: 'pedro', bloco: 'B', apartamento: '202' },
+      { id: 2, nome: 'caetano', bloco: 'B', apartamento: '202' },
     ];
 
     setTimeout(() => {

@@ -34,17 +34,19 @@
 
 .titulo-tabelaUsuarios{
   display: flex;
-  height:20%;
+  height:25%;
   padding-top: 4.375rem;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   align-self: stretch;
+  padding: 35px;
 }
 
 .conteudo-tabelaUsuarios{
   display: flex;
-  height: 80%;
+  height: 75%;
   padding: 0.625rem;
   flex-direction: column;
   justify-content: center;
