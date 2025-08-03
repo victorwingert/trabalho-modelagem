@@ -1,0 +1,129 @@
+/*----------------------------TABELA USUARIO------------------------*/
+
+.pagina-tabelaUsuarios{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.background-tabelaUsuarios{
+  width: 100%;
+}
+
+.titulo-tabelaUsuarios{
+  color: var(--White, #FFF);
+  text-align: center;
+  font-family: Roboto;
+  font-size: 4vh;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 4.95rem;
+}
+
+.sideBar-tabelaUsuarios{
+  display: inline-flex;
+  height: 100vh;
+  width: 10vh;
+  padding: 10vh 1.5vh;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  background: #1E1E1E;
+}
+
+.titulo-tabelaUsuarios{
+  display: flex;
+  height:20%;
+  padding-top: 4.375rem;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.conteudo-tabelaUsuarios{
+  display: flex;
+  height: 80%;
+  padding: 0.625rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.superior-tabelaUsuarios{
+  display: flex;
+  width: 61.125rem;
+  padding: 0.625rem 0;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.paginacao-tabelaUsuarios{
+  display: flex;
+  padding: 0.625rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.logo{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-bottom:10vh;
+}
+
+.imagem{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 3vh;
+}
+
+table{
+  display: flex;
+width: 61.125rem;
+height: 22.9375rem;
+flex-direction: column;
+align-items: flex-start;
+flex-shrink: 0;
+border-radius: 0.5rem;
+box-shadow: 5px 10px 20px 0 rgba(0, 0, 0, 0.25);
+}
+
+thead{
+  display: flex;
+  height: 4.1875rem;
+  align-items: flex-start;
+  flex-shrink: 0;
+  align-self: stretch;
+  border-bottom: 1px solid var(--Stroke, #EEEAF5);
+  background: var(--Header-Fill, #F4F0FF);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+tbody{
+  display: flex;
+align-items: center;
+align-self: stretch;
+border-bottom: 1px solid var(--Stroke, #EEEAF5);
+background: #FFF;
+}
+
+.paginacao-tabelaUsuarios{
+  display: flex;
+width: 14.25rem;
+height: 3.3125rem;
+justify-content: space-between;
+align-items: center;
+border-radius: 0.625rem;
+background: #E9F5FE;
+}

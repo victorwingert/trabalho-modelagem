@@ -17,7 +17,5 @@ background: linear-gradient(117deg, #000 0.02%, #1A1A1A 25.08%, #333 50.15%, #66
   height: 100vh;
   
   /* Centraliza o conteúdo (nosso formulário de login) */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  
 }

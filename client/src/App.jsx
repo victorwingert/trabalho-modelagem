@@ -5,7 +5,9 @@ import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import TabelaUsuariosPage from './pages/TabelaUsuarios';
 
-import './App.css'; // todo o css
+import './App.css'; 
+import './Login.css';
+import './Tabela.css';
 
 function App() {
   return (

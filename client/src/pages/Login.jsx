@@ -16,8 +16,8 @@ function LoginPage() {
   };
 
   return (
-    <div className="conteudo-Login">
-      
+    <div className='pagina-Login'> 
+      <div className="conteudo-Login">
       <form onSubmit={handleSubmit}>
         <div className='conteudoPai-Login'>
           <h1>Login</h1>
@@ -56,6 +56,8 @@ function LoginPage() {
         </div>
       </form>
     </div>
+  </div>
+    
   );
 }
 
