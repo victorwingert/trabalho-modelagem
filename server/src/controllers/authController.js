@@ -35,3 +35,29 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'Ocorreu um erro no servidor.' });
   }
 };
+
+// função para fazer login
+exports.login = async (req, res) => {
+  try {
+    const { usuario, senha } = req.body;
+
+    // Procura o usuário pelo nome
+    const usuarioEncontrado = await Registro.findOne({ where: { Usuario: usuario } });
+
+    if (!usuarioEncontrado) {
+      return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+    }
+
+    // Compara a senha enviada com o hash armazenado
+    const senhaCorreta = await bcrypt.compare(senha, usuarioEncontrado.Senha);
+
+    if (!senhaCorreta) {
+      return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+    }
+
+    res.status(200).json({ message: 'Login realizado com sucesso!' });
+  } catch (error) {
+    console.error('Erro no login:', error);
+    res.status(500).json({ message: 'Erro interno no servidor.' });
+  }
+};
