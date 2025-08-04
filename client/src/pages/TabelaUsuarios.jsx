@@ -7,6 +7,12 @@ function TabelaUsuariosPage() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [sidebarAberta, setSidebarAberta] = useState(false);
+  const toggleSidebar = () => {
+    setSidebarAberta((prev) => !prev);
+  };
+
+
   // Simula busca no banco de dados
   useEffect(() => {
     const dadosMock = [
@@ -46,27 +52,33 @@ function TabelaUsuariosPage() {
 
   return (
       <div className='pagina-tabelaUsuarios'>
-        <aside className='sideBar-tabelaUsuarios'>
-          <a href="/login">
-            <img className='logo' src={logo} alt="Logo do Dum Bloco." />
-          </a>
-          <a href="/login">
+        <aside className={`sideBar-tabelaUsuarios ${sidebarAberta ? 'aberta' : 'fechada'}`}>
+          <button onClick={toggleSidebar} className="botao-toggle-sidebar">
+            {sidebarAberta ? '⮜' : '⮞'}
+          </button>
+          <a href="/login" className="item-sidebar">
             <img className='imagem' src={logo} alt="Logo do Dum Bloco." />
+            {sidebarAberta && <span className="texto-sidebar">Home</span>}
           </a>
-          <a href="/login">
+          <a href="/login" className="item-sidebar">
             <img className='imagem' src={logo} alt="Logo do Dum Bloco." />
+            {sidebarAberta && <span className="texto-sidebar">Usuarios</span>}
           </a>
-          <a href="/login">
+          <a href="/login" className="item-sidebar">
             <img className='imagem' src={logo} alt="Logo do Dum Bloco." />
+            {sidebarAberta && <span className="texto-sidebar">Tarefas</span>}
           </a>
-          <a href="/login">
+          <a href="/login" className="item-sidebar">
             <img className='imagem' src={logo} alt="Logo do Dum Bloco." />
+            {sidebarAberta && <span className="texto-sidebar">Notícias</span>}
           </a>
-          <a href="/login">
+          <a href="/login" className="item-sidebar">
             <img className='imagem' src={logo} alt="Logo do Dum Bloco." />
+            {sidebarAberta && <span className="texto-sidebar">N lembro</span>}
           </a>
-          <a href="/login">
+          <a href="/login" className="item-sidebar">
             <img className='imagem' src={logo} alt="Logo do Dum Bloco." />
+            {sidebarAberta && <span className="texto-sidebar">N lembro</span>}
           </a>
         </aside>
         <div className='background-tabelaUsuarios'>
@@ -76,10 +88,10 @@ function TabelaUsuariosPage() {
           
 
           <div className='conteudo-tabelaUsuarios'>
-<div className="pesquisa-tabelaUsuarios">
-  <input type="text" placeholder="🔍 Search" />
-  <button>CRIAR</button>
-</div>
+            <div className="pesquisa-tabelaUsuarios">
+              <input type="text" placeholder="Search" />
+              <button>Criar</button>
+            </div>
             <table className='tabela-usuarios'>
               <thead>
                 <tr>
