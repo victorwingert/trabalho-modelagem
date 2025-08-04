@@ -12,7 +12,7 @@
 }
 
 .titulo-tabelaUsuarios{
-  color: var(--White, #FFF);
+  color: #f4efff;
   text-align: center;
   font-family: Roboto;
   font-size: 4vh;
@@ -76,7 +76,8 @@
   align-items: center;
   width: 7vh;
   height: 100%;
-  padding-bottom: 3vh;
+  justify-content: center;
+  align-self: center;
 }
 
 .tabela-usuarios {
@@ -242,12 +243,13 @@
  flex-direction: column;
  align-items: flex-start;
  padding: 10vh 1.5vh;
+ gap: 2.3vh;
 }
 
 .sideBar-tabelaUsuarios{
   display: inline-flex;
   height: 100vh;
-  width: 10vh;
+  width: 12vh;
   padding: 15vh 1.5vh;
   flex-direction: column;
   align-items: start;
@@ -262,6 +264,7 @@
 .botao-toggle-sidebar {
   position: fixed;
   top: 4vh;
+  left: 2.5vh;
   z-index: 1100;
   background-color: #f4efff;
   border: none;
@@ -273,21 +276,23 @@
   transition: left 0.3s ease;
 }
 
-.botao-toggle-sidebar.aberta {
-  left: 50vh;
-}
-
 .item-sidebar {
  display: flex;
  align-items: center;
  gap: 10px;
- padding: 1vh 0;
  text-decoration: none;
- color: white;
+ color: #f4efff;
+ width: 100%;
+ border-radius: 0.23463rem;
+ padding: 1vh;
+}
+
+.item-sidebar:hover{
+  background-color: #2e2e2e;
 }
 
 .texto-sidebar {
  font-size: 16px;
- color: white;
+ color: #f4efff;
  white-space: nowrap;
 }

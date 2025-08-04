@@ -12,6 +12,9 @@ function TabelaUsuariosPage() {
     setSidebarAberta((prev) => !prev);
   };
 
+  const [modalAberto, setModalAberto] = useState(false);
+  const abrirModal = () => setModalAberto (true);
+  const fecharModal =() => setModalAberto (false);
 
   // Simula busca no banco de dados
   useEffect(() => {
@@ -119,11 +122,11 @@ function TabelaUsuariosPage() {
             </table>
 
             <div className="paginacao-tabelaUsuarios">
-              <button>{'<'}</button>
+              <button>{'⮜'}</button>
               <button className="ativo">1</button>
               <button>2</button>
               <button>3</button>
-              <button>{'>'}</button>
+              <button>{'⮞'}</button>
             </div>
 
 
