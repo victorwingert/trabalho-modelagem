@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; // 1. Importa o Link para navegação
-import authService from '../services/authService';
 import logo from '../assets/Logo.svg';
 
 function LoginPage() {
