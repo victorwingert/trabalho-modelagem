@@ -80,7 +80,7 @@ const LoginPage: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
             <div className='indicaSindico-Login'>
               <p>
                 Ainda não tem uma conta? <br />
-                Contate seu síndico!
+                <a className='linkSindico-Login' href="google.com">Contate seu síndico!</a>
               </p>
             </div>
           </div>
