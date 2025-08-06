@@ -3,6 +3,8 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import LoginPage from './pages/Login';
 import TabelaUsuariosPage from './pages/TabelaUsuarios';
+import TabelaNoticiasPage from './pages/TabelaNoticias';
+
 
 import './App.css'; 
 import './Login.css';
@@ -16,6 +18,8 @@ function App() {
       <Route path="/" element={<Navigate to="/login" />} />
 
       <Route path="/tabelaUsuarios" element={<TabelaUsuariosPage />} />
+
+      <Route path="/tabelaNoticias" element={<TabelaNoticiasPage />} />
 
       <Route
         path="/login"

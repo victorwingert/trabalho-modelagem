@@ -98,7 +98,7 @@ const TabelaUsuariosPage: React.FC<TabelaUsuariosPageProps> = () => {
                     <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
                     {sidebarAberta && <span className="texto-sidebar">Home</span>}
                 </a>
-                <a href="/login" className="item-sidebar">
+                <a href="/tabelaUsuarios" className="item-sidebar">
                     <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
                     {sidebarAberta && <span className="texto-sidebar">Usuários</span>}
                 </a>
@@ -110,9 +110,9 @@ const TabelaUsuariosPage: React.FC<TabelaUsuariosPageProps> = () => {
                     <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
                     {sidebarAberta && <span className="texto-sidebar">Blocos</span>}
                 </a>
-                <a href="/login" className="item-sidebar">
+                <a href="/tabelaNoticias" className="item-sidebar">
                     <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">N sei</span>}
+                    {sidebarAberta && <span className="texto-sidebar">Avisos</span>}
                 </a>
                 <a href="/login" className="itemLogout-sidebar">
                     <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
