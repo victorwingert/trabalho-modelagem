@@ -169,7 +169,7 @@ const TabelaPedidosPage: React.FC = () => {
             <SidebarNavigation 
                             sidebarAberta={sidebarAberta}
                             toggleSidebar={toggleSidebar}
-                            currentPage="/tabelaProdutos"
+                            currentPage="/tabelaPedidos"
             />
 
             {/********************* titulo *******************/}

@@ -90,7 +90,7 @@ const TabelaNoticiasPage: React.FC = () => {
             <SidebarNavigation 
                             sidebarAberta={sidebarAberta}
                             toggleSidebar={toggleSidebar}
-                            currentPage="/tabelaProdutos"
+                            currentPage="/tabelaNoticias"
             />
 
             {/********************* titulo *******************/}
