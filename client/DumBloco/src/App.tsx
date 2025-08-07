@@ -4,6 +4,8 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './pages/Login';
 import TabelaUsuariosPage from './pages/TabelaUsuarios';
 import TabelaNoticiasPage from './pages/TabelaNoticias';
+import TabelaPedidosPage from './pages/TabelaPedidos';
+import TabelaProdutosPage from './pages/TabelaProdutos';
 
 
 import './App.css'; 
@@ -21,13 +23,19 @@ function App() {
 
       <Route path="/tabelaNoticias" element={<TabelaNoticiasPage />} />
 
+      <Route path="/tabelaPedidos" element={<TabelaPedidosPage />} />
+
+      <Route path="/tabelaProdutos" element={<TabelaProdutosPage />} />
+
+
+
       <Route
         path="/login"
         element={
           <LoginPage
             onLoginSuccess={() => {
               console.log("Usuário autenticado!");
-              navigate("/tabelaUsuarios");
+              navigate("/tabelaProdutos");
             }}
           />
         }

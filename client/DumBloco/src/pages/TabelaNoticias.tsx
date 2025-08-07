@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import logo from '../assets/Logo.svg';
+import SidebarNavigation from '../components/sidebar-navigation';
 
 
 interface Noticia {
@@ -86,35 +87,11 @@ const TabelaNoticiasPage: React.FC = () => {
     return (
         <div className="pagina-tabelaUsuarios">
             {/********************* Sidebar *******************/}
-            <aside className={`sideBar-tabelaUsuarios ${sidebarAberta ? 'aberta' : 'fechada'}`}>
-                <button onClick={toggleSidebar} className="botao-toggle-sidebar">
-                    {sidebarAberta ? '⮜' : '⮞'}
-                </button>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Home</span>}
-                </a>
-                <a href="/tabelaUsuarios" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Usuários</span>}
-                </a>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Tarefas</span>}
-                </a>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Blocos</span>}
-                </a>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">N sei</span>}
-                </a>
-                <a href="/login" className="itemLogout-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Logout</span>}
-                </a>
-            </aside>
+            <SidebarNavigation 
+                            sidebarAberta={sidebarAberta}
+                            toggleSidebar={toggleSidebar}
+                            currentPage="/tabelaProdutos"
+            />
 
             {/********************* titulo *******************/}
             <div className='background-tabelaUsuarios'>

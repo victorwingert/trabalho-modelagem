@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 //import { Link } from 'react-router-dom';
 import logo from '../assets/Logo.svg';
+import SidebarNavigation from '../components/sidebar-navigation';
 
 interface Usuario {
     id: number;
@@ -90,35 +91,11 @@ const TabelaUsuariosPage: React.FC<TabelaUsuariosPageProps> = () => {
     return (
         <div className='pagina-tabelaUsuarios'>
             {/********************* Sidebar *******************/}
-            <aside className={`sideBar-tabelaUsuarios ${sidebarAberta ? 'aberta' : 'fechada'}`}>
-                <button onClick={toggleSidebar} className="botao-toggle-sidebar">
-                    {sidebarAberta ? '⮜' : '⮞'}
-                </button>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Home</span>}
-                </a>
-                <a href="/tabelaUsuarios" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Usuários</span>}
-                </a>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Tarefas</span>}
-                </a>
-                <a href="/login" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Blocos</span>}
-                </a>
-                <a href="/tabelaNoticias" className="item-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Avisos</span>}
-                </a>
-                <a href="/login" className="itemLogout-sidebar">
-                    <img className='imagem' src={logo || "/placeholder.svg"} alt="Logo do Dum Bloco." />
-                    {sidebarAberta && <span className="texto-sidebar">Logout</span>}
-                </a>
-            </aside>
+            <SidebarNavigation 
+                            sidebarAberta={sidebarAberta}
+                            toggleSidebar={toggleSidebar}
+                            currentPage="/tabelaProdutos"
+            />
 
             {/********************* titulo *******************/}
             <div className='background-tabelaUsuarios'>
