@@ -14,7 +14,8 @@ body {
   background: linear-gradient(117deg, #000 0.02%, #1A1A1A 25.08%, #333 50.15%, #666 97.87%);
 
   /* Garante que o corpo ocupe toda a altura da tela */
-  height: 100vh;
+  min-height: 100vh; /* garante altura mínima */
+  background-attachment: fixed;
   
   font-family: Roboto;
   
