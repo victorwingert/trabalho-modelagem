@@ -249,8 +249,7 @@
 .sideBar-tabelaUsuarios {
   display: inline-flex;
   height: 100vh;
-  width: 10vh; /* Reduzido de 12vh */
-  padding: 12vh 1vh 4vh 1vh; /* Reduzido padding */
+  padding: 16vh 1vh 4vh 1vh; /* Reduzido padding */
   flex-direction: column;
   align-items: start;
   flex-shrink: 0;
@@ -264,7 +263,7 @@
 .botao-toggle-sidebar {
   position: fixed;
   top: 3vh; /* Reduzido de 4vh */
-  left: 2vh; /* Reduzido de 2.5vh */
+  left: 1.5vh; /* Reduzido de 2.5vh */
   z-index: 1100;
   background-color: #f4efff;
   border: none;
@@ -279,6 +278,7 @@
 .item-sidebar, .itemLogout-sidebar {
   display: flex;
   align-items: center;
+  padding-left: 1vh;
   gap: 8px; /* Reduzido de 10px */
   text-decoration: none;
   color: #f4efff;
