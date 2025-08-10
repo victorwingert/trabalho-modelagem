@@ -1,18 +1,25 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { PERMISSIONS } from '../config/permissions';
 
 interface JwtPayload {
   id: string;
   usuario: string;
+  nivelAcesso: number;
   exp: number;
 }
 
-const useAuth = (): boolean => {
+interface AuthInfo {
+  isAuthenticated: boolean;
+  nivelAcesso: number | null;
+}
+
+export const useAuth = (): AuthInfo => {
   const token = localStorage.getItem('authToken');
 
   if (!token) {
-    return false;
+    return { isAuthenticated: false, nivelAcesso: null };
   }
 
   try {
@@ -20,22 +27,33 @@ const useAuth = (): boolean => {
 
     if (decodedToken.exp * 1000 < Date.now()) {
       localStorage.removeItem('authToken');
-      return false;
+      return { isAuthenticated: false, nivelAcesso: null };
     }
 
-    return true;
+    return { isAuthenticated: true, nivelAcesso: decodedToken.nivelAcesso };
 
   } catch (error) {
     console.error("Token inválido:", error);
     localStorage.removeItem('authToken');
-    return false;
+    return { isAuthenticated: false, nivelAcesso: null };
   }
 };
 
 const ProtectedRoute: React.FC = () => {
-  const isAuth = useAuth();
+  const { isAuthenticated, nivelAcesso } = useAuth();
+  const location = useLocation();
 
-  return isAuth ? <Outlet /> : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  const allowedRoles = PERMISSIONS[location.pathname];
+
+  if (!allowedRoles || (nivelAcesso !== null && !allowedRoles.includes(nivelAcesso))) {
+      return <Navigate to="/tabelaNoticias" />;
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
