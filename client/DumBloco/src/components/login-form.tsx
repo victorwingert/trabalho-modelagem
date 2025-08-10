@@ -28,9 +28,12 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
       const dados = await resposta.json();
 
       if (resposta.ok) {
+        if (dados.token) {
+          localStorage.setItem('authToken', dados.token);
+        }
         onLoginSuccess();
       } else {
-        setErro(dados.mensagem || "Erro ao fazer login.");
+        setErro(dados.message || "Erro ao fazer login.");
       }
     } catch (err) {
       console.error(err);

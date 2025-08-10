@@ -6,6 +6,7 @@ import TabelaUsuariosPage from './pages/TabelaUsuarios';
 import TabelaNoticiasPage from './pages/TabelaNoticias';
 import TabelaPedidosPage from './pages/TabelaPedidos';
 import TabelaProdutosPage from './pages/TabelaProdutos';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 import './App.css'; 
@@ -19,27 +20,27 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" />} />
 
-      <Route path="/tabelaUsuarios" element={<TabelaUsuariosPage />} />
-
-      <Route path="/tabelaNoticias" element={<TabelaNoticiasPage />} />
-
-      <Route path="/tabelaPedidos" element={<TabelaPedidosPage />} />
-
-      <Route path="/tabelaProdutos" element={<TabelaProdutosPage />} />
-
-
-
       <Route
         path="/login"
         element={
           <LoginPage
             onLoginSuccess={() => {
               console.log("Usuário autenticado!");
-              navigate("/tabelaProdutos");
+              navigate("/tabelaProdutos"); 
             }}
           />
         }
       />
+
+      
+      <Route element={<ProtectedRoute />}>
+        {/* todas as rotas aqui dentro exigem login */}
+        <Route path="/tabelaUsuarios" element={<TabelaUsuariosPage />} />
+        <Route path="/tabelaNoticias" element={<TabelaNoticiasPage />} />
+        <Route path="/tabelaPedidos" element={<TabelaPedidosPage />} />
+        <Route path="/tabelaProdutos" element={<TabelaProdutosPage />} />
+      </Route>
+      
     </Routes>
   );
 }

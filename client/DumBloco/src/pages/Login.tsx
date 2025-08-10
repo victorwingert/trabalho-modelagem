@@ -24,7 +24,12 @@ const LoginPage: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       const dados = await resposta.json();
 
       if (resposta.ok) {
-        onLoginSuccess();
+        if (dados.token) {
+          localStorage.setItem('authToken', dados.token);
+          onLoginSuccess();
+        } else {
+          setErro('Token de autenticação não recebido.');
+        }
       } else {
         setErro(dados.mensagem || 'Erro ao fazer login.');
       }
