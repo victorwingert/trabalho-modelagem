@@ -1,4 +1,7 @@
 import React from 'react';
+import { useAuth } from './ProtectedRoute';
+import { PERMISSIONS } from '../config/permissions';
+
 import logo from '../assets/Logo.svg';
 import property from '../assets/property.svg';
 import alert from '../assets/alert.svg';
@@ -18,14 +21,29 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   toggleSidebar, 
   currentPage 
 }) => {
-  const menuItems = [
-    { href: "/login", label: "Home", icon: logo },
+  const { nivelAcesso } = useAuth();
+
+  const allMenuItems = [
+    { href: "/tabelaNoticias", label: "Home", icon: logo },
     { href: "/tabelaUsuarios", label: "Usuários", icon: user },
     { href: "/tabelaPedidos", label: "Pedidos", icon: task },
     { href: "/tabelaProdutos", label: "Produtos", icon: products },
     { href: "/tabelaBlocos", label: "Blocos", icon: property },
     { href: "/tabelaNoticias", label: "Notícias", icon: alert },
+    // novas paginas com placeholders
+    // { href: "/registroFuncionarioMorador", label: "Registrar Funcionário/Morador", icon: someIcon },
+    // { href: "/registroSindicoAdmin", label: "Registrar Síndico/Admin", icon: someIcon },
   ];
+
+  const menuItems = allMenuItems.filter(item => {
+    const allowedRoles = PERMISSIONS[item.href];
+    if (!allowedRoles) return false;
+    return nivelAcesso !== null && allowedRoles.includes(nivelAcesso);
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+  };
 
   return (
     <aside className={`sideBar-tabelaUsuarios ${sidebarAberta ? 'aberta' : 'fechada'}`}>
@@ -42,17 +60,17 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           <img 
             className='imagem' 
             src={item.icon || "/placeholder.svg"} 
-            alt="Logo do Dum Bloco." 
+            alt={`Ícone de ${item.label}`} 
           />
           {sidebarAberta && <span className="texto-sidebar">{item.label}</span>}
         </a>
       ))}
       
-      <a href="/login" className="itemLogout-sidebar">
+      <a href="/login" className="itemLogout-sidebar" onClick={handleLogout}>
         <img 
           className='imagem' 
           src={quit || "/placeholder.svg"} 
-          alt="Logo do Dum Bloco." 
+          alt="Ícone de sair" 
         />
         {sidebarAberta && <span className="texto-sidebar">Logout</span>}
       </a>
