@@ -14,10 +14,12 @@ app.use(express.json()); // Permite que o servidor entenda requisições com cor
 // --- USAR AS ROTAS ---
 // Importa o arquivo de rotas de autenticação
 const authRoutes = require('./src/routes/authRoutes');
+const produtosRoutes = require('./src/routes/produtos');
 
 // Diz ao Express para usar essas rotas quando a URL começar com /api
 // Ex: /api/register, /api/login
 app.use('/api', authRoutes);
+app.use('/api', produtosRoutes);
 
 
 // Inicia o servidor

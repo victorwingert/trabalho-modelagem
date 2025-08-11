@@ -15,14 +15,43 @@ interface Produto {
 
 type TipoModal = 'criar' | 'editar' | 'excluir' | 'visualizar' | null;
 
+const API_BASE_URL = 'http://localhost:3001/api'; 
+
 const TabelaProdutosPage: React.FC = () => {
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [tipoModal, setTipoModal] = useState<TipoModal>(null);
     const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
     const [sidebarAberta, setSidebarAberta] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     
     const toggleSidebar = (): void => setSidebarAberta((prev) => !prev);
+
+    // Função para buscar produtos da API
+    const buscarProdutos = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch(`${API_BASE_URL}/produtos`);
+            
+            if (!response.ok) {
+                throw new Error('Erro ao buscar produtos');
+            }
+            
+            const produtosData = await response.json();
+            setProdutos(produtosData);
+        } catch (error) {
+            console.error('Erro ao buscar produtos:', error);
+            setError('Erro ao carregar produtos');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Carregar produtos ao montar o componente
+    useEffect(() => {
+        buscarProdutos();
+    }, []);
 
     const abrirModalCriar = () => {
         setTipoModal('criar');
@@ -49,81 +78,6 @@ const TabelaProdutosPage: React.FC = () => {
         setProdutoSelecionado(null);
     };
 
-    useEffect(() => {
-        const dadosMock: Produto[] = [
-            { 
-                id: 1, 
-                nome: 'Detergente Multiuso', 
-                descricao: 'Detergente concentrado para limpeza geral', 
-                categoria: 'Limpeza',
-                preco: 15.90,
-                quantidade_estoque: 50,
-                data_cadastro: '2025-01-10',
-                status: 'Ativo',
-                fornecedor: 'Limpeza Total Ltda'
-            },
-            { 
-                id: 2, 
-                nome: 'Lâmpada LED 12W', 
-                descricao: 'Lâmpada LED branca fria para áreas comuns', 
-                categoria: 'Elétrico',
-                preco: 25.50,
-                quantidade_estoque: 30,
-                data_cadastro: '2025-01-12',
-                status: 'Ativo',
-                fornecedor: 'Elétrica Silva'
-            },
-            { 
-                id: 3, 
-                nome: 'Tinta Acrílica Branca', 
-                descricao: 'Tinta acrílica premium para paredes externas', 
-                categoria: 'Pintura',
-                preco: 89.90,
-                quantidade_estoque: 15,
-                data_cadastro: '2025-01-15',
-                status: 'Ativo',
-                fornecedor: 'Tintas & Cores'
-            },
-            { 
-                id: 4, 
-                nome: 'Papel Higiênico', 
-                descricao: 'Papel higiênico folha dupla - pacote com 12 rolos', 
-                categoria: 'Higiene',
-                preco: 32.00,
-                quantidade_estoque: 0,
-                data_cadastro: '2025-01-18',
-                status: 'Inativo',
-                fornecedor: 'Distribuidora Hygiene'
-            },
-            { 
-                id: 5, 
-                nome: 'Cadeado de Segurança', 
-                descricao: 'Cadeado com chave para portões e áreas restritas', 
-                categoria: 'Segurança',
-                preco: 45.00,
-                quantidade_estoque: 8,
-                data_cadastro: '2025-01-20',
-                status: 'Ativo',
-                fornecedor: 'Segurança Max'
-            },
-            { 
-                id: 6, 
-                nome: 'Fertilizante para Jardim', 
-                descricao: 'Fertilizante orgânico para plantas ornamentais', 
-                categoria: 'Jardinagem',
-                preco: 28.75,
-                quantidade_estoque: 22,
-                data_cadastro: '2025-01-22',
-                status: 'Ativo',
-                fornecedor: 'Verde Vida Jardinagem'
-            },
-        ];
-        setTimeout(() => {
-            setProdutos(dadosMock);
-            setLoading(false);
-        }, 500);
-    }, []);
-
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'Ativo':
@@ -136,9 +90,9 @@ const TabelaProdutosPage: React.FC = () => {
     };
 
     const getEstoqueColor = (quantidade: number) => {
-        if (quantidade === 0) return '#dc3545'; // Vermelho para sem estoque
-        if (quantidade <= 10) return '#ffc107'; // Amarelo para estoque baixo
-        return '#28a745'; // Verde para estoque normal
+        if (quantidade === 0) return '#dc3545';
+        if (quantidade <= 10) return '#ffc107';
+        return '#28a745';
     };
 
     const formatarPreco = (preco: number) => {
@@ -148,13 +102,12 @@ const TabelaProdutosPage: React.FC = () => {
         }).format(preco);
     };
 
-    const handleSalvarProduto = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSalvarProduto = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
         const formData = new FormData(form);
         
-        const novoProduto: Produto = {
-            id: tipoModal === 'criar' ? Date.now() : produtoSelecionado?.id || 0,
+        const dadosProduto = {
             nome: formData.get('nome') as string,
             descricao: formData.get('descricao') as string,
             categoria: formData.get('categoria') as string,
@@ -165,22 +118,112 @@ const TabelaProdutosPage: React.FC = () => {
             fornecedor: formData.get('fornecedor') as string,
         };
 
-        if (tipoModal === 'criar') {
-            setProdutos((prev) => [...prev, novoProduto]);
-        } else {
-            setProdutos((prev) =>
-                prev.map((p) => (p.id === novoProduto.id ? novoProduto : p))
-            );
-        }
+        try {
+            let response;
+            
+            if (tipoModal === 'criar') {
+                // Criar novo produto
+                response = await fetch(`${API_BASE_URL}/produtos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dadosProduto),
+                });
+            } else {
+                // Editar produto existente
+                response = await fetch(`${API_BASE_URL}/produtos/${produtoSelecionado?.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dadosProduto),
+                });
+            }
 
-        fecharModal();
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao salvar produto');
+            }
+
+            const result = await response.json();
+            console.log(result.message); // Log da mensagem de sucesso
+
+            // Recarregar a lista de produtos
+            await buscarProdutos();
+            fecharModal();
+            
+        } catch (error) {
+            console.error('Erro ao salvar produto:', error);
+            setError(error instanceof Error ? error.message : 'Erro ao salvar produto');
+        }
     };
 
-    const handleExcluir = (id: number) => {
-        if (confirm('Deseja excluir este produto?')) {
-            setProdutos((prev) => prev.filter((p) => p.id !== id));
+    const handleExcluir = async (id: number) => {
+        if (!confirm('Deseja excluir este produto?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/produtos/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao excluir produto');
+            }
+
+            const result = await response.json();
+            console.log(result.message); // Log da mensagem de sucesso
+
+            // Recarregar a lista de produtos
+            await buscarProdutos();
+            fecharModal();
+            
+        } catch (error) {
+            console.error('Erro ao excluir produto:', error);
+            setError(error instanceof Error ? error.message : 'Erro ao excluir produto');
         }
     };
+
+    // Mostrar loading
+    if (loading) {
+        return (
+            <div className="pagina-tabelaUsuarios">
+                <SidebarNavigation 
+                    sidebarAberta={sidebarAberta}
+                    toggleSidebar={toggleSidebar}
+                    currentPage="/tabelaProdutos"
+                />
+                <div className='background-tabelaUsuarios'>
+                    <div className='titulo-tabelaUsuarios'>
+                        <h1>Carregando produtos...</h1>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Mostrar erro
+    if (error) {
+        return (
+            <div className="pagina-tabelaUsuarios">
+                <SidebarNavigation 
+                    sidebarAberta={sidebarAberta}
+                    toggleSidebar={toggleSidebar}
+                    currentPage="/tabelaProdutos"
+                />
+                <div className='background-tabelaUsuarios'>
+                    <div className='titulo-tabelaUsuarios'>
+                        <h1>Erro ao carregar produtos</h1>
+                        <p>{error}</p>
+                        <button onClick={buscarProdutos}>Tentar novamente</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="pagina-tabelaUsuarios">
@@ -219,48 +262,56 @@ const TabelaProdutosPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {produtos.map((produto) => (
-                                <tr key={produto.id}>
-                                    <td>{produto.id}</td>
-                                    <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {produto.nome}
-                                    </td>
-                                    <td>{produto.categoria}</td>
-                                    <td style={{ fontWeight: 'bold', color: '#2c5aa0' }}>
-                                        {formatarPreco(produto.preco)}
-                                    </td>
-                                    <td>
-                                        <span style={{ 
-                                            color: getEstoqueColor(produto.quantidade_estoque), 
-                                            fontWeight: 'bold',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            backgroundColor: `${getEstoqueColor(produto.quantidade_estoque)}20`
-                                        }}>
-                                            {produto.quantidade_estoque} un.
-                                        </span>
-                                    </td>
-                                    <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {produto.fornecedor}
-                                    </td>
-                                    <td>
-                                        <span style={{ 
-                                            color: getStatusColor(produto.status), 
-                                            fontWeight: 'bold',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            backgroundColor: `${getStatusColor(produto.status)}20`
-                                        }}>
-                                            {produto.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button onClick={() => abrirModalEditar(produto)}>Editar</button>
-                                        <button onClick={() => abrirModalExcluir(produto)}>Excluir</button>
-                                        <button onClick={() => abrirModalVisualizar(produto)}>Visualizar</button>
+                            {produtos.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>
+                                        Nenhum produto encontrado
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                produtos.map((produto) => (
+                                    <tr key={produto.id}>
+                                        <td>{produto.id}</td>
+                                        <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {produto.nome}
+                                        </td>
+                                        <td>{produto.categoria}</td>
+                                        <td style={{ fontWeight: 'bold', color: '#2c5aa0' }}>
+                                            {formatarPreco(produto.preco)}
+                                        </td>
+                                        <td>
+                                            <span style={{ 
+                                                color: getEstoqueColor(produto.quantidade_estoque), 
+                                                fontWeight: 'bold',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                backgroundColor: `${getEstoqueColor(produto.quantidade_estoque)}20`
+                                            }}>
+                                                {produto.quantidade_estoque} un.
+                                            </span>
+                                        </td>
+                                        <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {produto.fornecedor}
+                                        </td>
+                                        <td>
+                                            <span style={{ 
+                                                color: getStatusColor(produto.status), 
+                                                fontWeight: 'bold',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                backgroundColor: `${getStatusColor(produto.status)}20`
+                                            }}>
+                                                {produto.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button onClick={() => abrirModalEditar(produto)}>Editar</button>
+                                            <button onClick={() => abrirModalExcluir(produto)}>Excluir</button>
+                                            <button onClick={() => abrirModalVisualizar(produto)}>Visualizar</button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 
@@ -289,7 +340,6 @@ const TabelaProdutosPage: React.FC = () => {
                                             if (produtoSelecionado) {
                                                 handleExcluir(produtoSelecionado.id); 
                                             }
-                                            fecharModal(); 
                                         }}
                                     >
                                         Confirmar
