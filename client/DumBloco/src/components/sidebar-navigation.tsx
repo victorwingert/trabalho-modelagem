@@ -30,6 +30,8 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { href: "/tabelaProdutos", label: "Produtos", icon: products },
     { href: "/tabelaBlocos", label: "Blocos", icon: property },
     { href: "/tabelaNoticias", label: "Notícias", icon: alert },
+    { href: "/tabelaMoradores", label: "Moradores", icon: alert },
+
     // novas paginas com placeholders
     // { href: "/registroFuncionarioMorador", label: "Registrar Funcionário/Morador", icon: someIcon },
     // { href: "/registroSindicoAdmin", label: "Registrar Síndico/Admin", icon: someIcon },

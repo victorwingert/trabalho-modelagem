@@ -5,6 +5,7 @@ import TabelaUsuariosPage from './pages/TabelaUsuarios';
 import TabelaNoticiasPage from './pages/TabelaNoticias';
 import TabelaPedidosPage from './pages/TabelaPedidos';
 import TabelaProdutosPage from './pages/TabelaProdutos';
+import TabelaMoradoresPage from './pages/TabelaMoradores';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
@@ -25,7 +26,7 @@ function App() {
           <LoginPage
             onLoginSuccess={() => {
               console.log("Usuário autenticado! Redirecionando...");
-              navigate("/tabelaNoticias");
+              navigate("/tabelaMoradores");
             }}
           />
         }
@@ -38,6 +39,7 @@ function App() {
         <Route path="/tabelaNoticias" element={<TabelaNoticiasPage />} />
         <Route path="/tabelaPedidos" element={<TabelaPedidosPage />} />
         <Route path="/tabelaProdutos" element={<TabelaProdutosPage />} />
+        <Route path="/tabelaMoradores" element={<TabelaMoradoresPage />} />
 
         {/* Placeholders para as rotas futuras. */}
         {/*

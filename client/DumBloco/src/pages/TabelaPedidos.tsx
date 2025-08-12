@@ -8,13 +8,16 @@ interface Pedido {
     data_solicitacao: string;
     data_conclusao?: string;
     status: string;
-    apartamento_id: number;
     morador_id: number;
+    funcionario_id?: number;
     nome_morador?: string;
     apartamento?: string;
 }
 
 type TipoModal = 'criar' | 'editar' | 'excluir' | 'visualizar' | null;
+
+// Configuração da URL base da API
+const API_BASE_URL = 'http://localhost:3001/api'; // Ajuste conforme seu backend
 
 const TabelaPedidosPage: React.FC = () => {
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -22,8 +25,35 @@ const TabelaPedidosPage: React.FC = () => {
     const [tipoModal, setTipoModal] = useState<TipoModal>(null);
     const [pedidoSelecionado, setPedidoSelecionado] = useState<Pedido | null>(null);
     const [sidebarAberta, setSidebarAberta] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     
     const toggleSidebar = (): void => setSidebarAberta((prev) => !prev);
+
+    // Função para buscar serviços da API
+    const buscarPedidos = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch(`${API_BASE_URL}/servicos`);
+            
+            if (!response.ok) {
+                throw new Error('Erro ao buscar serviços');
+            }
+            
+            const pedidosData = await response.json();
+            setPedidos(pedidosData);
+        } catch (error) {
+            console.error('Erro ao buscar serviços:', error);
+            setError('Erro ao carregar serviços');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Carregar pedidos ao montar o componente
+    useEffect(() => {
+        buscarPedidos();
+    }, []);
 
     const abrirModalCriar = () => {
         setTipoModal('criar');
@@ -50,71 +80,6 @@ const TabelaPedidosPage: React.FC = () => {
         setPedidoSelecionado(null);
     };
 
-    useEffect(() => {
-        const dadosMock: Pedido[] = [
-            { 
-                id: 1, 
-                tipo_servico: 'Manutenção', 
-                descricao: 'Reparo no encanamento do banheiro', 
-                data_solicitacao: '2025-01-15',
-                data_conclusao: '2025-01-18',
-                status: 'Concluído',
-                apartamento_id: 101,
-                morador_id: 1,
-                nome_morador: 'João Silva',
-                apartamento: 'Bloco A - Apt 101'
-            },
-            { 
-                id: 2, 
-                tipo_servico: 'Limpeza', 
-                descricao: 'Limpeza do corredor do 5º andar', 
-                data_solicitacao: '2025-01-20',
-                status: 'Em andamento',
-                apartamento_id: 502,
-                morador_id: 2,
-                nome_morador: 'Maria Santos',
-                apartamento: 'Bloco B - Apt 502'
-            },
-            { 
-                id: 3, 
-                tipo_servico: 'Elétrica', 
-                descricao: 'Troca de lâmpadas do hall de entrada', 
-                data_solicitacao: '2025-01-22',
-                status: 'Pendente',
-                apartamento_id: 304,
-                morador_id: 3,
-                nome_morador: 'Carlos Oliveira',
-                apartamento: 'Bloco C - Apt 304'
-            },
-            { 
-                id: 4, 
-                tipo_servico: 'Jardinagem', 
-                descricao: 'Poda das árvores da área comum', 
-                data_solicitacao: '2025-01-25',
-                status: 'Pendente',
-                apartamento_id: 201,
-                morador_id: 4,
-                nome_morador: 'Ana Costa',
-                apartamento: 'Bloco A - Apt 201'
-            },
-            { 
-                id: 5, 
-                tipo_servico: 'Pintura', 
-                descricao: 'Pintura da parede externa do bloco', 
-                data_solicitacao: '2025-01-28',
-                status: 'Em andamento',
-                apartamento_id: 403,
-                morador_id: 5,
-                nome_morador: 'Pedro Almeida',
-                apartamento: 'Bloco D - Apt 403'
-            },
-        ];
-        setTimeout(() => {
-            setPedidos(dadosMock);
-            setLoading(false);
-        }, 500);
-    }, []);
-
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'Concluído':
@@ -128,40 +93,127 @@ const TabelaPedidosPage: React.FC = () => {
         }
     };
 
-    const handleSalvarPedido = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSalvarPedido = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
         const formData = new FormData(form);
         
-        const novoPedido: Pedido = {
-            id: tipoModal === 'criar' ? Date.now() : pedidoSelecionado?.id || 0,
+        const dadosPedido = {
             tipo_servico: formData.get('tipo_servico') as string,
             descricao: formData.get('descricao') as string,
             data_solicitacao: formData.get('data_solicitacao') as string,
-            data_conclusao: formData.get('data_conclusao') as string || undefined,
+            data_conclusao: formData.get('data_conclusao') as string || null,
             status: formData.get('status') as string,
-            apartamento_id: parseInt(formData.get('apartamento_id') as string),
-            morador_id: parseInt(formData.get('morador_id') as string),
-            nome_morador: formData.get('nome_morador') as string,
-            apartamento: formData.get('apartamento') as string,
+            morador_id: parseInt(formData.get('morador_id') as string) || 1,
+            funcionario_id: parseInt(formData.get('funcionario_id') as string) || null,
         };
 
-        if (tipoModal === 'criar') {
-            setPedidos((prev) => [...prev, novoPedido]);
-        } else {
-            setPedidos((prev) =>
-                prev.map((p) => (p.id === novoPedido.id ? novoPedido : p))
-            );
-        }
+        try {
+            let response;
+            
+            if (tipoModal === 'criar') {
+                // Criar novo serviço
+                response = await fetch(`${API_BASE_URL}/servicos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dadosPedido),
+                });
+            } else {
+                // Editar serviço existente
+                response = await fetch(`${API_BASE_URL}/servicos/${pedidoSelecionado?.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dadosPedido),
+                });
+            }
 
-        fecharModal();
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao salvar serviço');
+            }
+
+            const result = await response.json();
+            console.log(result.message); // Log da mensagem de sucesso
+
+            // Recarregar a lista de serviços
+            await buscarPedidos();
+            fecharModal();
+            
+        } catch (error) {
+            console.error('Erro ao salvar serviço:', error);
+            setError(error instanceof Error ? error.message : 'Erro ao salvar serviço');
+        }
     };
 
-    const handleExcluir = (id: number) => {
-        if (confirm('Deseja excluir este pedido?')) {
-            setPedidos((prev) => prev.filter((p) => p.id !== id));
+    const handleExcluir = async (id: number) => {
+        if (!confirm('Deseja excluir este pedido?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/servicos/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao excluir serviço');
+            }
+
+            const result = await response.json();
+            console.log(result.message); // Log da mensagem de sucesso
+
+            // Recarregar a lista de serviços
+            await buscarPedidos();
+            fecharModal();
+            
+        } catch (error) {
+            console.error('Erro ao excluir serviço:', error);
+            setError(error instanceof Error ? error.message : 'Erro ao excluir serviço');
         }
     };
+
+    // Mostrar loading
+    if (loading) {
+        return (
+            <div className="pagina-tabelaUsuarios">
+                <SidebarNavigation 
+                    sidebarAberta={sidebarAberta}
+                    toggleSidebar={toggleSidebar}
+                    currentPage="/tabelaPedidos"
+                />
+                <div className='background-tabelaUsuarios'>
+                    <div className='titulo-tabelaUsuarios'>
+                        <h1>Carregando serviços...</h1>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Mostrar erro
+    if (error) {
+        return (
+            <div className="pagina-tabelaUsuarios">
+                <SidebarNavigation 
+                    sidebarAberta={sidebarAberta}
+                    toggleSidebar={toggleSidebar}
+                    currentPage="/tabelaPedidos"
+                />
+                <div className='background-tabelaUsuarios'>
+                    <div className='titulo-tabelaUsuarios'>
+                        <h1>Erro ao carregar serviços</h1>
+                        <p>{error}</p>
+                        <button onClick={buscarPedidos}>Tentar novamente</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="pagina-tabelaUsuarios">
@@ -200,34 +252,42 @@ const TabelaPedidosPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {pedidos.map((pedido) => (
-                                <tr key={pedido.id}>
-                                    <td>{pedido.id}</td>
-                                    <td>{pedido.tipo_servico}</td>
-                                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {pedido.descricao}
-                                    </td>
-                                    <td>{pedido.nome_morador}</td>
-                                    <td>{pedido.apartamento}</td>
-                                    <td>{new Date(pedido.data_solicitacao).toLocaleDateString('pt-BR')}</td>
-                                    <td>
-                                        <span style={{ 
-                                            color: getStatusColor(pedido.status), 
-                                            fontWeight: 'bold',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            backgroundColor: `${getStatusColor(pedido.status)}20`
-                                        }}>
-                                            {pedido.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button onClick={() => abrirModalEditar(pedido)}>Editar</button>
-                                        <button onClick={() => abrirModalExcluir(pedido)}>Excluir</button>
-                                        <button onClick={() => abrirModalVisualizar(pedido)}>Visualizar</button>
+                            {pedidos.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>
+                                        Nenhum serviço encontrado
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                pedidos.map((pedido) => (
+                                    <tr key={pedido.id}>
+                                        <td>{pedido.id}</td>
+                                        <td>{pedido.tipo_servico}</td>
+                                        <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {pedido.descricao}
+                                        </td>
+                                        <td>{pedido.nome_morador || 'Não informado'}</td>
+                                        <td>{pedido.apartamento || 'Não informado'}</td>
+                                        <td>{new Date(pedido.data_solicitacao).toLocaleDateString('pt-BR')}</td>
+                                        <td>
+                                            <span style={{ 
+                                                color: getStatusColor(pedido.status), 
+                                                fontWeight: 'bold',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                backgroundColor: `${getStatusColor(pedido.status)}20`
+                                            }}>
+                                                {pedido.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button onClick={() => abrirModalEditar(pedido)}>Editar</button>
+                                            <button onClick={() => abrirModalExcluir(pedido)}>Excluir</button>
+                                            <button onClick={() => abrirModalVisualizar(pedido)}>Visualizar</button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 
@@ -256,7 +316,6 @@ const TabelaPedidosPage: React.FC = () => {
                                             if (pedidoSelecionado) {
                                                 handleExcluir(pedidoSelecionado.id); 
                                             }
-                                            fecharModal(); 
                                         }}
                                     >
                                         Confirmar
@@ -271,8 +330,8 @@ const TabelaPedidosPage: React.FC = () => {
                                     <p><strong>ID:</strong> {pedidoSelecionado?.id}</p>
                                     <p><strong>Tipo de Serviço:</strong> {pedidoSelecionado?.tipo_servico}</p>
                                     <p><strong>Descrição:</strong> {pedidoSelecionado?.descricao}</p>
-                                    <p><strong>Solicitante:</strong> {pedidoSelecionado?.nome_morador}</p>
-                                    <p><strong>Apartamento:</strong> {pedidoSelecionado?.apartamento}</p>
+                                    <p><strong>Solicitante:</strong> {pedidoSelecionado?.nome_morador || 'Não informado'}</p>
+                                    <p><strong>Apartamento:</strong> {pedidoSelecionado?.apartamento || 'Não informado'}</p>
                                     <p><strong>Data de Solicitação:</strong> {pedidoSelecionado?.data_solicitacao ? new Date(pedidoSelecionado.data_solicitacao).toLocaleDateString('pt-BR') : 'N/A'}</p>
                                     {pedidoSelecionado?.data_conclusao && (
                                         <p><strong>Data de Conclusão:</strong> {new Date(pedidoSelecionado.data_conclusao).toLocaleDateString('pt-BR')}</p>
@@ -339,7 +398,7 @@ const TabelaPedidosPage: React.FC = () => {
                                         <input 
                                             type="date" 
                                             name="data_solicitacao" 
-                                            defaultValue={pedidoSelecionado?.data_solicitacao || ''} 
+                                            defaultValue={pedidoSelecionado?.data_solicitacao || new Date().toISOString().split('T')[0]} 
                                             required 
                                         />
                                     </label>
@@ -359,8 +418,8 @@ const TabelaPedidosPage: React.FC = () => {
                                             <option value="Concluído">Concluído</option>
                                         </select>
                                     </label>
-                                    <input type="hidden" name="apartamento_id" defaultValue={pedidoSelecionado?.apartamento_id || 1} />
                                     <input type="hidden" name="morador_id" defaultValue={pedidoSelecionado?.morador_id || 1} />
+                                    <input type="hidden" name="funcionario_id" defaultValue={pedidoSelecionado?.funcionario_id || 1} />
                                     
                                     <div className='modal-botoes'>
                                         <button type="submit">Salvar</button>
