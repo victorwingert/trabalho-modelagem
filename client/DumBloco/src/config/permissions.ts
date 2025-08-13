@@ -13,7 +13,8 @@ export const PERMISSIONS: { [key: string]: number[] } = {
   '/tabelaProdutos': [ROLES.PROPRIETARIO, ROLES.SINDICO, ROLES.ADMIN],
   '/tabelaMoradores': [ROLES.PROPRIETARIO, ROLES.SINDICO, ROLES.ADMIN],
   // rotas que faltam ser criadas
-  '/tabelaBlocos': [ROLES.SINDICO, ROLES.ADMIN],
+  '/tabelaFuncionarios': [ROLES.SINDICO, ROLES.ADMIN],
+  '/tabelaPropritarios': [ROLES.SINDICO, ROLES.ADMIN],
   '/registroFuncionarioMorador': [ROLES.SINDICO],
   '/registroSindicoAdmin': [ROLES.ADMIN],
 };

@@ -4,11 +4,13 @@ import { PERMISSIONS } from '../config/permissions';
 
 import logo from '../assets/Logo.svg';
 import property from '../assets/property.svg';
-import alert from '../assets/alert.svg';
+import alert from '../assets/bell.svg';
 import quit from '../assets/quit.svg';
-import products from '../assets/products.svg';
-import task from '../assets/task.svg';
-import user from '../assets/user.svg';
+import products from '../assets/archive.svg';
+import task from '../assets/align.svg';
+import accessibility from '../assets/accessibility.svg';
+import key from '../assets/key.svg';
+import square_user from '../assets/square_user.svg';
 
 interface SidebarNavigationProps {
   sidebarAberta: boolean;
@@ -25,12 +27,14 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
   const allMenuItems = [
     { href: "/tabelaNoticias", label: "Home", icon: logo },
-    { href: "/tabelaUsuarios", label: "Usuários", icon: user },
     { href: "/tabelaPedidos", label: "Pedidos", icon: task },
     { href: "/tabelaProdutos", label: "Produtos", icon: products },
     { href: "/tabelaBlocos", label: "Blocos", icon: property },
     { href: "/tabelaNoticias", label: "Notícias", icon: alert },
-    { href: "/tabelaMoradores", label: "Moradores", icon: alert },
+    { href: "/tabelaMoradores", label: "Moradores", icon: accessibility },
+    { href: "/tabelaFuncionarios", label: "Funcionarios", icon: key },
+    { href: "/tabelaProprietarios", label: "Proprietarios", icon: square_user },
+
 
     // novas paginas com placeholders
     // { href: "/registroFuncionarioMorador", label: "Registrar Funcionário/Morador", icon: someIcon },

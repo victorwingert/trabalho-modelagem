@@ -17,11 +17,14 @@ const authRoutes = require('./src/routes/authRoutes');
 const produtosRoutes = require('./src/routes/produtos');
 const pedidosRoutes = require('./src/routes/servicos');
 const moradorRoutes = require('./src/routes/moradores');
+const funcionarioRoutes = require('./src/routes/funcionarios');
+// NOVA LINHA
 
 
 // Diz ao Express para usar um prefixo ÚNICO para cada conjunto de rotas.
 // Esta é a correção mais importante.
 app.use('/api/moradores', moradorRoutes);
+app.use('/api/funcionarios', funcionarioRoutes); 
 app.use('/api', authRoutes);
 app.use('/api', produtosRoutes);
 app.use('/api', pedidosRoutes); // Talvez renomear para /api/servicos?

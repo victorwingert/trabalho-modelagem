@@ -8,7 +8,7 @@ export function DashboardLayout() {
       <main className="flex-1 p-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-white text-center mb-8">Tabela de tarefas</h1>
-          <TaskTable />
+          <TaskTable/>
         </div>
       </main>
     </div>

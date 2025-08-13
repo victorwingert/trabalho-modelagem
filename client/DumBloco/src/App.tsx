@@ -5,6 +5,8 @@ import TabelaUsuariosPage from './pages/TabelaUsuarios';
 import TabelaNoticiasPage from './pages/TabelaNoticias';
 import TabelaPedidosPage from './pages/TabelaPedidos';
 import TabelaProdutosPage from './pages/TabelaProdutos';
+import TabelaFuncionariosPage from './pages/TabelaFuncionarios';
+import TabelaProprietariosPage from './pages/TabelaPedidos';
 import TabelaMoradoresPage from './pages/TabelaMoradores';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -40,6 +42,8 @@ function App() {
         <Route path="/tabelaPedidos" element={<TabelaPedidosPage />} />
         <Route path="/tabelaProdutos" element={<TabelaProdutosPage />} />
         <Route path="/tabelaMoradores" element={<TabelaMoradoresPage />} />
+        <Route path="/tabelaFuncionarios" element={<TabelaFuncionariosPage />} />
+        <Route path="/tabelaProprietarios" element={<TabelaProprietariosPage />} />
 
         {/* Placeholders para as rotas futuras. */}
         {/*
