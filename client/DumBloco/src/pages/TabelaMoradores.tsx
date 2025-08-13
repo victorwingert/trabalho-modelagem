@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import SidebarNavigation from '../components/sidebar-navigation';
 
-// Interface para morador com dados das tabelas relacionadas
+// Interface para morador - ajustada para corresponder exatamente à view
 interface Morador {
     id: number;
     nome: string;
@@ -11,16 +11,11 @@ interface Morador {
     id_apartamento: number;
     id_entidade: number;
     
-    // Dados do apartamento (JOIN com Apartamentos)
+    // Campos retornados pela view vw_moradores_completo
     numeroApartamento: string;
     andar: number;
     id_bloco: number;
-    
-    // Dados do bloco (JOIN com Blocos/Nome_Bloco)
     nomeBloco: string;
-    descricaoBloco?: string;
-    
-    // Dados da entidade (JOIN com Entidades)
     nomeEntidade: string;
     tipoEntidade: string;
 }
@@ -63,7 +58,7 @@ interface OpcoesApartamentos {
 interface OpcoesEntidades {
     id: number;
     nome: string;
-    tipo: string;
+    tipo?: string;
 }
 
 interface TabelaMoradoresPageProps {}
@@ -127,7 +122,7 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
 
     // ===== CHAMADAS PARA API =====
     
-    // Buscar moradores com JOIN das tabelas relacionadas
+    // Buscar moradores usando a view
     const buscarMoradores = useCallback(async (params: ParametrosConsulta): Promise<RespostaPaginada<Morador>> => {
         setLoading(true);
         setErro('');
@@ -148,8 +143,6 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Adicione headers de autenticação se necessário
-                    // 'Authorization': `Bearer ${token}`,
                 },
             });
 
@@ -196,11 +189,6 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
             }
 
             // Buscar entidades
-            const responseEntidades = await fetch(`${API_BASE_URL}/entidades`);
-            if (responseEntidades.ok) {
-                const entidades: OpcoesEntidades[] = await responseEntidades.json();
-                setEntidadesDisponiveis(entidades);
-            }
 
         } catch (error) {
             console.error('Erro ao carregar opções:', error);
@@ -319,19 +307,30 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
 
     // ===== OPERAÇÕES CRUD =====
     
-    const criarMorador = async (dadosMorador: Omit<Morador, 'id' | 'numeroApartamento' | 'andar' | 'id_bloco' | 'nomeBloco' | 'descricaoBloco' | 'nomeEntidade' | 'tipoEntidade'>): Promise<void> => {
+    // Tipo para dados de criação (sem campos calculados da view)
+    type DadosCriacaoMorador = {
+        nome: string;
+        email?: string;
+        cpf: string;
+        telefone: string;
+        id_apartamento: number;
+        id_entidade: number;
+        tipo?: string; // Para criar entidade se necessário
+    };
+    
+    const criarMorador = async (dadosMorador: DadosCriacaoMorador): Promise<void> => {
         try {
             const response = await fetch(`${API_BASE_URL}/moradores`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(dadosMorador)
             });
 
             if (!response.ok) {
-                throw new Error(`Erro ao criar morador: ${response.statusText}`);
+                const errorText = await response.text();
+                throw new Error(`Erro ao criar morador: ${response.status} - ${errorText}`);
             }
 
             // Recarregar dados
@@ -346,19 +345,19 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
         }
     };
 
-    const editarMorador = async (id: number, dadosMorador: Partial<Morador>): Promise<void> => {
+    const editarMorador = async (id: number, dadosMorador: Partial<DadosCriacaoMorador>): Promise<void> => {
         try {
             const response = await fetch(`${API_BASE_URL}/moradores/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(dadosMorador)
             });
 
             if (!response.ok) {
-                throw new Error(`Erro ao editar morador: ${response.statusText}`);
+                const errorText = await response.text();
+                throw new Error(`Erro ao editar morador: ${response.status} - ${errorText}`);
             }
 
             // Recarregar dados
@@ -376,14 +375,12 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
     const excluirMorador = async (id: number): Promise<void> => {
         try {
             const response = await fetch(`${API_BASE_URL}/moradores/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    // 'Authorization': `Bearer ${token}`,
-                }
+                method: 'DELETE'
             });
 
             if (!response.ok) {
-                throw new Error(`Erro ao excluir morador: ${response.statusText}`);
+                const errorText = await response.text();
+                throw new Error(`Erro ao excluir morador: ${response.status} - ${errorText}`);
             }
 
             // Recarregar dados
@@ -403,9 +400,9 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
         const form = e.target as HTMLFormElement;
         const formData = new FormData(form);
         
-        const dadosMorador = {
+        const dadosMorador: DadosCriacaoMorador = {
             nome: formData.get('nome') as string,
-            email: formData.get('email') as string,
+            email: formData.get('email') as string || undefined,
             cpf: formData.get('cpf') as string,
             telefone: formData.get('telefone') as string,
             id_apartamento: parseInt(formData.get('id_apartamento') as string),
@@ -584,14 +581,6 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
                                         parametrosConsulta.direcaoOrdenacao === 'asc' ? '↑' : '↓'
                                     )}
                                 </th>
-                                <th 
-                                    onClick={() => mudarOrdenacao('nomeEntidade')}
-                                    style={{ cursor: 'pointer', minWidth: '120px' }}
-                                >
-                                    Entidade {parametrosConsulta.campoOrdenacao === 'nomeEntidade' && (
-                                        parametrosConsulta.direcaoOrdenacao === 'asc' ? '↑' : '↓'
-                                    )}
-                                </th>
                                 <th style={{ minWidth: '200px' }}>Ações</th>
                             </tr>
                         </thead>
@@ -620,7 +609,6 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
                                         <td style={{ textAlign: 'center' }}>{morador.nomeBloco}</td>
                                         <td style={{ textAlign: 'center' }}>{morador.numeroApartamento}</td>
                                         <td style={{ textAlign: 'center' }}>{morador.andar}º</td>
-                                        <td style={{ textAlign: 'center' }}>{morador.nomeEntidade}</td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                                                 <button 
@@ -703,7 +691,7 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
                                         type="text" 
                                         name="nome" 
                                         required 
-                                                            defaultValue={moradorSelecionado?.nome || ''} 
+                                        defaultValue={moradorSelecionado?.nome || ''} 
                                     />
                                 </div>
 
@@ -752,21 +740,6 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
                                     </select>
                                 </div>
 
-                                <div>
-                                    <label>Entidade *</label>
-                                    <select 
-                                        name="id_entidade" 
-                                        required 
-                                        defaultValue={moradorSelecionado?.id_entidade || ''}
-                                    >
-                                        <option value="">Selecione</option>
-                                        {entidadesDisponiveis.map(ent => (
-                                            <option key={ent.id} value={ent.id}>
-                                                {ent.nome} ({ent.tipo})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
                             </div>
 
                             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -802,8 +775,7 @@ const TabelaMoradoresPage: React.FC<TabelaMoradoresPageProps> = () => {
                         <p><strong>Telefone:</strong> {moradorSelecionado.telefone}</p>
                         <p><strong>Email:</strong> {moradorSelecionado.email || 'Não informado'}</p>
                         <p><strong>Bloco:</strong> {moradorSelecionado.nomeBloco}</p>
-                        <p><strong>Apartamento:</strong> {moradorSelecionado.numeroApartamento} - Andar {moradorSelecionado.andar}</p>
-                        <p><strong>Entidade:</strong> {moradorSelecionado.nomeEntidade} ({moradorSelecionado.tipoEntidade})</p>
+                        <p><strong>Apartamento:</strong> {moradorSelecionado.numeroApartamento} - Andar {moradorSelecionado.andar}º</p>
                         <div style={{ marginTop: '20px', textAlign: 'right' }}>
                             <button type="button" onClick={fecharModal}>Fechar</button>
                         </div>

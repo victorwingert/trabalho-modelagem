@@ -1,157 +1,205 @@
-const Morador = require('../models/Morador');
-const Apartamento = require('../models/Apartamento');
-const Bloco = require('../models/Bloco');
-const Entidade = require('../models/Entidade');
-const { Op, Sequelize } = require('sequelize');
+const Morador = require('../models/Morador'); // Seu model de Morador (usando a VIEW)
+const Entidade = require('../models/Entidade'); // O model de Entidade que criamos acima
+const sequelize = require('../config/database'); // A instância do sequelize para transações
+const { Op } = require('sequelize');
 
-// Função para obter todos os moradores com filtros, paginação e ordenação
-exports.getAll = async (req, res) => {
-  try {
-    // Extrai os parâmetros da requisição com valores padrão
-    const {
-      pagina = 1,
-      itensPorPagina = 8,
-      termoPesquisa = '',
-      campoOrdenacao = 'nome',
-      direcaoOrdenacao = 'asc',
-      filtroBloco = '',
-      filtroEntidade = '',
-    } = req.query;
+// GET / - Listar todos os moradores com filtros e paginação
+const listarMoradores = async (req, res) => {
+    try {
+        const {
+            pagina = 1,
+            itensPorPagina = 8,
+            termoPesquisa = '',
+            campoOrdenacao = 'nome',
+            direcaoOrdenacao = 'asc',
+            filtroBloco = '',
+            filtroEntidade = ''
+        } = req.query;
 
-    const offset = (pagina - 1) * itensPorPagina;
-    let where = {}; // Objeto para as condições da cláusula WHERE principal
+        const where = {};
+        if (termoPesquisa) {
+            where[Op.or] = [
+                { nome: { [Op.like]: `%${termoPesquisa}%` } },
+                { cpf: { [Op.like]: `%${termoPesquisa}%` } },
+                { telefone: { [Op.like]: `%${termoPesquisa}%` } },
+                { numeroApartamento: { [Op.like]: `%${termoPesquisa}%` } },
+                { nomeBloco: { [Op.like]: `%${termoPesquisa}%` } },
+            ];
+        }
 
-    // Define as associações que serão incluídas na consulta
-    const include = [
-      {
-        model: Apartamento,
-        as: 'Apartamento',
-        include: [{
-          model: Bloco,
-          as: 'Bloco',
-        }],
-      },
-      {
-        model: Entidade,
-        as: 'Entidade',
-        required: true, // Garante que todo morador tenha uma entidade (INNER JOIN)
-      },
-    ];
+        if (filtroBloco) where.id_bloco = parseInt(filtroBloco);
+        if (filtroEntidade) where.id_entidade = parseInt(filtroEntidade);
 
-    // CORREÇÃO: A pesquisa agora busca nos campos da tabela Entidade
-    if (termoPesquisa) {
-      where[Op.or] = [
-        // Pesquisa nos campos da Entidade associada
-        Sequelize.where(Sequelize.col('Entidade.nome'), { [Op.like]: `%${termoPesquisa}%` }),
-        Sequelize.where(Sequelize.col('Entidade.cpf'), { [Op.like]: `%${termoPesquisa}%` }),
-        Sequelize.where(Sequelize.col('Entidade.telefone'), { [Op.like]: `%${termoPesquisa}%` }),
-        // Mantém a pesquisa em outros campos relevantes
-        Sequelize.where(Sequelize.col('Apartamento.numero'), { [Op.like]: `%${termoPesquisa}%` }),
-        Sequelize.where(Sequelize.col('Apartamento.Bloco.nome'), { [Op.like]: `%${termoPesquisa}%` }),
-      ];
+        const offset = (parseInt(pagina) - 1) * parseInt(itensPorPagina);
+
+        const { count, rows } = await Morador.findAndCountAll({
+            where: where,
+            limit: parseInt(itensPorPagina),
+            offset: offset,
+            order: [[campoOrdenacao, direcaoOrdenacao.toUpperCase()]]
+        });
+
+        res.json({
+            dados: rows,
+            totalItens: count,
+            totalPaginas: Math.ceil(count / parseInt(itensPorPagina)),
+            paginaAtual: parseInt(pagina),
+            itensPorPagina: parseInt(itensPorPagina)
+        });
+    } catch (error) {
+        console.error('Erro ao buscar moradores:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor', detalhes: error.message });
     }
-
-    // Adiciona filtro por entidade na cláusula WHERE principal
-    if (filtroEntidade) {
-      where.id_entidade = filtroEntidade;
-    }
-
-    // Adiciona filtro por bloco diretamente na associação aninhada
-    if (filtroBloco) {
-      include[0].include[0].where = { id: filtroBloco };
-      include[0].required = true;
-      include[0].include[0].required = true;
-    }
-    
-    // CORREÇÃO: O mapa de ordenação agora aponta para a tabela Entidade
-    const orderMap = {
-        id: [['id', direcaoOrdenacao]], // Morador.id
-        nome: [[Sequelize.col('Entidade.nome'), direcaoOrdenacao]],
-        cpf: [[Sequelize.col('Entidade.cpf'), direcaoOrdenacao]],
-        telefone: [[Sequelize.col('Entidade.telefone'), direcaoOrdenacao]],
-        numeroApartamento: [[Sequelize.col('Apartamento.numero'), direcaoOrdenacao]],
-        andar: [[Sequelize.col('Apartamento.andar'), direcaoOrdenacao]],
-        nomeBloco: [[Sequelize.col('Apartamento.Bloco.nome'), direcaoOrdenacao]],
-        nomeEntidade: [[Sequelize.col('Entidade.nome'), direcaoOrdenacao]],
-    };
-
-    // A ordenação padrão agora é pelo nome da entidade
-    const order = orderMap[campoOrdenacao] || [[Sequelize.col('Entidade.nome'), 'asc']];
-
-    // Executa a consulta principal
-    const { count, rows } = await Morador.findAndCountAll({
-      where,
-      include,
-      order,
-      limit: parseInt(itensPorPagina),
-      offset,
-      distinct: true,
-    });
-
-    // CORREÇÃO: Mapeia os dados a partir das fontes corretas (Morador, Entidade, Apartamento)
-    const dados = rows.map(m => ({
-      id: m.id, // ID da tabela Moradores
-      // Dados pessoais da tabela Entidade
-      nome: m.Entidade?.nome,
-      cpf: m.Entidade?.cpf,
-      telefone: m.Entidade?.telefone,
-      email: m.Entidade?.email, // Assumindo que o email também está em Entidade
-      // IDs da tabela Moradores
-      id_apartamento: m.id_apartamento,
-      id_entidade: m.id_entidade,
-      // Dados do Apartamento e Bloco
-      numeroApartamento: m.Apartamento?.numero,
-      andar: m.Apartamento?.andar,
-      id_bloco: m.Apartamento?.id_bloco,
-      nomeBloco: m.Apartamento?.Bloco?.nome, // Certifique-se que o nome do campo no modelo é 'nome'
-      descricaoBloco: m.Apartamento?.Bloco?.descricao,
-      // Dados da Entidade (pode ser útil ter no objeto final)
-      nomeEntidade: m.Entidade?.nome,
-      tipoEntidade: m.Entidade?.tipo,
-    }));
-
-    // Retorna a resposta paginada em formato JSON
-    res.json({
-      dados,
-      totalItens: count,
-      totalPaginas: Math.ceil(count / itensPorPagina),
-      paginaAtual: parseInt(pagina),
-      itensPorPagina: parseInt(itensPorPagina),
-    });
-
-  } catch (err) {
-    console.error('Erro detalhado ao buscar moradores:', err);
-    res.status(500).json({ error: 'Erro ao buscar moradores', details: err.message });
-  }
 };
 
-// As outras funções (create, update, delete) permanecem as mesmas
-exports.create = async (req, res) => {
-  try {
-    const novo = await Morador.create(req.body);
-    res.status(201).json(novo);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro ao criar morador' });
-  }
+// GET /:id - Buscar um morador específico
+const buscarMoradorPorId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        // findByPk é o método ideal para buscar pela chave primária
+        const morador = await Morador.findByPk(id);
+
+        if (!morador) {
+            return res.status(404).json({ erro: 'Morador não encontrado' });
+        }
+        res.json(morador);
+    } catch (error) {
+        console.error('Erro ao buscar morador:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor', detalhes: error.message });
+    }
 };
 
-exports.update = async (req, res) => {
-  try {
-    await Morador.update(req.body, { where: { id: req.params.id } });
-    res.json({ message: 'Morador atualizado' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro ao atualizar morador' });
-  }
+// POST / - Criar novo morador
+const criarMorador = async (req, res) => {
+    // Usamos uma transação para garantir que ambas as operações (criar/atualizar entidade e criar morador)
+    // funcionem ou falhem juntas.
+    const t = await sequelize.transaction();
+    try {
+        const { nome, cpf, telefone, email, id_apartamento, id_entidade, tipo } = req.body;
+
+        if (!nome || !cpf || !telefone || !id_apartamento) {
+            return res.status(400).json({ erro: 'Campos obrigatórios: nome, cpf, telefone, id_apartamento' });
+        }
+
+        let entidade;
+        if (id_entidade) {
+            // Se um id_entidade foi passado, atualizamos a entidade existente
+            [entidade] = await Entidade.upsert({
+                id: id_entidade,
+                nome, cpf, telefone, email, tipo: tipo || 'Proprietário'
+            }, { transaction: t, returning: true });
+        } else {
+            // Se não, criamos uma nova entidade
+            entidade = await Entidade.create({
+                nome, cpf, telefone, email, tipo: tipo || 'Proprietário'
+            }, { transaction: t });
+        }
+
+        // Criamos o morador referenciando a entidade
+        // ATENÇÃO: Seu model Morador.js deve ter as associações corretas para isso funcionar
+        // ou você precisa de um model para a tabela 'Moradores' real, não a view.
+        // Assumindo um model para a tabela 'Moradores':
+        const novoMorador = await Morador.create({
+            id_apartamento: id_apartamento,
+            id_entidade: entidade.id
+        }, { transaction: t });
+        
+        // Se tudo deu certo, confirma a transação
+        await t.commit();
+        
+        // Busca o morador completo na view para retornar ao front-end
+        const moradorCompleto = await Morador.findByPk(novoMorador.id);
+        res.status(201).json(moradorCompleto);
+
+    } catch (error) {
+        // Se algo deu errado, desfaz a transação
+        await t.rollback();
+        console.error('Erro ao criar morador:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor', detalhes: error.message });
+    }
 };
 
-exports.delete = async (req, res) => {
-  try {
-    await Morador.destroy({ where: { id: req.params.id } });
-    res.json({ message: 'Morador excluído' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro ao excluir morador' });
-  }
+// PUT /:id - Atualizar morador
+const atualizarMorador = async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const { id } = req.params;
+        const { nome, cpf, telefone, email, id_apartamento, tipo } = req.body;
+
+        // Primeiro, buscar o morador na VIEW para pegar o id_entidade
+        const morador = await Morador.findByPk(id);
+        if (!morador) {
+            return res.status(404).json({ erro: 'Morador não encontrado' });
+        }
+
+        // Atualiza a entidade associada
+        await Entidade.update({
+            nome, cpf, telefone, email, tipo: tipo || 'Proprietário'
+        }, {
+            where: { id: morador.id_entidade },
+            transaction: t
+        });
+
+        // Atualiza o apartamento do morador, se fornecido
+        if (id_apartamento) {
+            // Isso requer um model para a tabela 'Moradores'
+            await Morador.update({ id_apartamento }, { where: { id: id }, transaction: t });
+        }
+
+        await t.commit();
+
+        const moradorAtualizado = await Morador.findByPk(id);
+        res.json(moradorAtualizado);
+
+    } catch (error) {
+        await t.rollback();
+        console.error('Erro ao atualizar morador:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor', detalhes: error.message });
+    }
+};
+
+// DELETE /:id - Excluir morador
+const excluirMorador = async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const { id } = req.params;
+        
+        const morador = await Morador.findByPk(id);
+        if (!morador) {
+            return res.status(404).json({ erro: 'Morador não encontrado' });
+        }
+
+        const id_entidade = morador.id_entidade;
+
+        // Exclui o morador (requer model da tabela 'Moradores')
+        await Morador.destroy({ where: { id: id }, transaction: t });
+
+        // Verifica se a entidade ainda é usada por outros moradores
+        const outrosMoradores = await Morador.count({
+            where: { id_entidade: id_entidade },
+            transaction: t
+        });
+
+        // Se a entidade não é mais usada, pode excluir
+        if (outrosMoradores === 0) {
+            await Entidade.destroy({ where: { id: id_entidade }, transaction: t });
+        }
+        
+        await t.commit();
+        res.json({ sucesso: true, mensagem: 'Morador excluído com sucesso' });
+
+    } catch (error) {
+        await t.rollback();
+        console.error('Erro ao excluir morador:', error);
+        res.status(500).json({ erro: 'Erro interno do servidor', detalhes: error.message });
+    }
+};
+
+
+module.exports = {
+    listarMoradores,
+    buscarMoradorPorId,
+    criarMorador,
+    atualizarMorador,
+    excluirMorador
 };

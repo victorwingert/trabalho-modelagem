@@ -8,27 +8,27 @@ require('./src/config/database');
 const app = express();
 
 // Middlewares
-app.use(cors()); // Permite que o front-end (em outra porta) acesse a API
-app.use(express.json()); // Permite que o servidor entenda requisições com corpo em JSON
+app.use(cors());
+app.use(express.json());
 
-// --- USAR AS ROTAS ---
-// Importa o arquivo de rotas de autenticação
+// --- USAR AS ROTAS (FORMA CORRETA) ---
+// Importa todos os seus arquivos de rotas
 const authRoutes = require('./src/routes/authRoutes');
 const produtosRoutes = require('./src/routes/produtos');
 const pedidosRoutes = require('./src/routes/servicos');
 const moradorRoutes = require('./src/routes/moradores');
 
 
-// Diz ao Express para usar essas rotas quando a URL começar com /api
-// Ex: /api/register, /api/login
-app.use('/api', moradorRoutes);
+// Diz ao Express para usar um prefixo ÚNICO para cada conjunto de rotas.
+// Esta é a correção mais importante.
+app.use('/api/moradores', moradorRoutes);
 app.use('/api', authRoutes);
 app.use('/api', produtosRoutes);
-app.use('/api', pedidosRoutes);
+app.use('/api', pedidosRoutes); // Talvez renomear para /api/servicos?
 
 
 // Inicia o servidor
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
