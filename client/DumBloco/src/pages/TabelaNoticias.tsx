@@ -1,12 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import logo from '../assets/Logo.svg';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import SidebarNavigation from '../components/sidebar-navigation';
 
-
+// Interface atualizada para corresponder ao backend
 interface Noticia {
     id: number;
-    texto: string;
-    data: string;
+    titulo: string;
+    descricao: string;
+    data_publicacao: string;
+}
+
+// Interface para a resposta paginada da API
+interface RespostaPaginada<T> {
+    dados: T[];
+    totalItens: number;
+    totalPaginas: number;
+    paginaAtual: number;
 }
 
 type TipoModal = 'criar' | 'editar' | 'excluir' | 'visualizar' | null;
@@ -14,73 +23,121 @@ type TipoModal = 'criar' | 'editar' | 'excluir' | 'visualizar' | null;
 const TabelaNoticiasPage: React.FC = () => {
     const [noticias, setNoticias] = useState<Noticia[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [erro, setErro] = useState<string | null>(null);
+
+    // Controle de modais
     const [tipoModal, setTipoModal] = useState<TipoModal>(null);
     const [noticiaSelecionada, setNoticiaSelecionada] = useState<Noticia | null>(null);
     const [sidebarAberta, setSidebarAberta] = useState<boolean>(false);
     
+    // Controle de paginação e pesquisa
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const [totalPaginas, setTotalPaginas] = useState(0);
+    const [termoPesquisa, setTermoPesquisa] = useState('');
+    const [termoPesquisaDebounced, setTermoPesquisaDebounced] = useState('');
+
+    const API_BASE_URL = "http://localhost:3001/api"; // Altere se o seu endereço for diferente
+
     const toggleSidebar = (): void => setSidebarAberta((prev) => !prev);
 
-    const abrirModalCriar = () => {
-        setTipoModal('criar');
-        setNoticiaSelecionada(null);
-    };
+    // Funções para abrir os modais
+    const abrirModalCriar = () => { setTipoModal('criar'); setNoticiaSelecionada(null); };
+    const abrirModalEditar = (noticia: Noticia) => { setTipoModal('editar'); setNoticiaSelecionada(noticia); };
+    const abrirModalExcluir = (noticia: Noticia) => { setTipoModal('excluir'); setNoticiaSelecionada(noticia); };
+    const abrirModalVisualizar = (noticia: Noticia) => { setTipoModal('visualizar'); setNoticiaSelecionada(noticia); };
+    const fecharModal = () => { setTipoModal(null); setNoticiaSelecionada(null); };
 
-    const abrirModalEditar = (noticia: Noticia) => {
-        setTipoModal('editar');
-        setNoticiaSelecionada(noticia);
-    };
+    // Função para buscar dados da API
+    const buscarNoticias = useCallback(async () => {
+        setLoading(true);
+        setErro(null);
+        try {
+            const params = new URLSearchParams({
+                pagina: paginaAtual.toString(),
+                itensPorPagina: '8',
+                termoPesquisa: termoPesquisaDebounced,
+                campoOrdenacao: 'data_publicacao',
+                direcaoOrdenacao: 'desc'
+            });
 
-    const abrirModalExcluir = (noticia: Noticia) => {
-        setTipoModal('excluir');
-        setNoticiaSelecionada(noticia);
-    };
+            const response = await fetch(`${API_BASE_URL}/noticias?${params}`);
+            if (!response.ok) throw new Error('Falha ao buscar dados das notícias.');
+            
+            const data: RespostaPaginada<Noticia> = await response.json();
+            
+            // Formatar a data para o formato yyyy-mm-dd
+            const noticiasFormatadas = data.dados.map(n => ({
+                ...n,
+                data_publicacao: n.data_publicacao.split('T')[0]
+            }));
 
-    const abrirModalVisualizar = (noticia: Noticia) => {
-        setTipoModal('visualizar');
-        setNoticiaSelecionada(noticia);
-    };
+            setNoticias(noticiasFormatadas);
+            setTotalPaginas(data.totalPaginas);
 
-    const fecharModal = () => {
-        setTipoModal(null);
-        setNoticiaSelecionada(null);
-    };
-
-    useEffect(() => {
-        const dadosMock: Noticia[] = [
-            { id: 1, texto: 'Inauguração do novo bloco.', data: '2025-08-01' },
-            { id: 2, texto: 'Manutenção programada para amanhã.', data: '2025-08-03' },
-            { id: 3, texto: 'Reunião do condomínio na sexta.', data: '2025-08-05' },
-        ];
-        setTimeout(() => {
-            setNoticias(dadosMock);
+        } catch (error: any) {
+            setErro(error.message);
+        } finally {
             setLoading(false);
-        }, 500);
-    }, []);
+        }
+    }, [paginaAtual, termoPesquisaDebounced]);
 
-    const handleSalvarNoticia = (e: React.FormEvent<HTMLFormElement>) => {
+    // Efeito para aplicar debounce na pesquisa
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setTermoPesquisaDebounced(termoPesquisa);
+            setPaginaAtual(1); // Resetar para a primeira página ao pesquisar
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [termoPesquisa]);
+    
+    // Efeito para buscar notícias quando a página ou a pesquisa mudar
+    useEffect(() => {
+        buscarNoticias();
+    }, [buscarNoticias]);
+
+    // Função para salvar (criar ou editar)
+    const handleSalvarNoticia = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
         const formData = new FormData(form);
-        const novaNoticia: Noticia = {
-            id: tipoModal === 'criar' ? Date.now() : noticiaSelecionada?.id || 0,
-            texto: formData.get('texto') as string,
-            data: formData.get('data') as string,
+        const dadosNoticia = {
+            titulo: formData.get('titulo') as string,
+            descricao: formData.get('descricao') as string,
+            data_publicacao: formData.get('data_publicacao') as string,
         };
 
-        if (tipoModal === 'criar') {
-            setNoticias((prev) => [...prev, novaNoticia]);
-        } else {
-            setNoticias((prev) =>
-                prev.map((n) => (n.id === novaNoticia.id ? novaNoticia : n))
-            );
-        }
+        const isCreating = tipoModal === 'criar';
+        const url = isCreating ? `${API_BASE_URL}/noticias` : `${API_BASE_URL}/noticias/${noticiaSelecionada?.id}`;
+        const method = isCreating ? 'POST' : 'PUT';
 
-        fecharModal();
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosNoticia)
+            });
+            if (!response.ok) throw new Error(`Falha ao ${isCreating ? 'criar' : 'editar'} notícia.`);
+            
+            fecharModal();
+            buscarNoticias(); // Recarrega a lista
+        } catch (error: any) {
+            setErro(error.message);
+        }
     };
 
-    const handleExcluir = (id: number) => {
-        if (confirm('Deseja excluir esta notícia?')) {
-            setNoticias((prev) => prev.filter((n) => n.id !== id));
+    // Função para excluir
+    const handleExcluir = async () => {
+        if (!noticiaSelecionada) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/noticias/${noticiaSelecionada.id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Falha ao excluir notícia.');
+            
+            fecharModal();
+            buscarNoticias(); // Recarrega a lista
+        } catch (error: any) {
+            setErro(error.message);
         }
     };
 
@@ -88,91 +145,106 @@ const TabelaNoticiasPage: React.FC = () => {
         <div className="pagina-tabelaUsuarios">
             {/********************* Sidebar *******************/}
             <SidebarNavigation 
-                            sidebarAberta={sidebarAberta}
-                            toggleSidebar={toggleSidebar}
-                            currentPage="/tabelaNoticias"
+                sidebarAberta={sidebarAberta}
+                toggleSidebar={toggleSidebar}
+                currentPage="/tabelaNoticias"
             />
 
-            {/********************* titulo *******************/}
+            {/********************* Conteúdo Principal *******************/}
             <div className='background-tabelaUsuarios'>
                 <div className='titulo-tabelaUsuarios'>
                     <h1>Tabela de Notícias</h1>
                 </div>
 
                 <div className='conteudo-tabelaUsuarios'>
-                    {/********************* pesquisa e criar *******************/}
+                    {/********************* Erro *******************/}
+                    {erro && <div className="alert-error">{erro}</div>}
+
+                    {/********************* Pesquisa e Criar *******************/}
                     <div className="pesquisa-tabelaUsuarios">
-                        <input type="text" placeholder="Search" />
-                        <button onClick={abrirModalCriar}>Criar</button>
+                        <input 
+                            type="text" 
+                            placeholder="Pesquisar por título ou descrição..." 
+                            value={termoPesquisa}
+                            onChange={(e) => setTermoPesquisa(e.target.value)}
+                        />
+                        <button onClick={abrirModalCriar}>Adicionar Notícia</button>
                     </div>
 
-                    {/********************* tabela *******************/}
+                    {/********************* Tabela *******************/}
                     <table className="tabela-usuarios">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Texto</th>
-                                <th>Data</th>
+                                <th>Título</th>
+                                <th>Descrição</th>
+                                <th>Data de Publicação</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {noticias.map((noticia) => (
-                                <tr key={noticia.id}>
-                                    <td>{noticia.id}</td>
-                                    <td>{noticia.texto}</td>
-                                    <td>{noticia.data}</td>
-                                    <td>
-                                        <button onClick={() => abrirModalEditar(noticia)}>Editar</button>
-                                        <button onClick={() => abrirModalExcluir(noticia)}>Excluir</button>
-                                        <button onClick={() => abrirModalVisualizar(noticia)}>Visualizar</button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {loading ? (
+                                <tr><td colSpan={4}>Carregando...</td></tr>
+                            ) : noticias.length === 0 ? (
+                                <tr><td colSpan={4}>Nenhuma notícia encontrada.</td></tr>
+                            ) : (
+                                noticias.map((noticia) => (
+                                    <tr key={noticia.id}>
+                                        <td>{noticia.titulo}</td>
+                                        <td>{noticia.descricao.substring(0, 50)}{noticia.descricao.length > 50 ? '...' : ''}</td>
+                                        <td>{new Date(noticia.data_publicacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                                        <td>
+                                            <button onClick={() => abrirModalVisualizar(noticia)}>Visualizar</button>
+                                            <button onClick={() => abrirModalEditar(noticia)}>Editar</button>
+                                            <button onClick={() => abrirModalExcluir(noticia)}>Excluir</button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 
-                    {/********************* paginacao *******************/}
-
-                    <div className="paginacao-tabelaUsuarios">
-                        <button>{'⮜'}</button>
-                        <button className="ativo">1</button>
-                        <button>2</button>
-                        <button>3</button>
-                        <button>{'⮞'}</button>
-                    </div>
+                    {/********************* Paginação *******************/}
+                    {totalPaginas > 1 && (
+                        <div className="paginacao-tabelaUsuarios">
+                            <button onClick={() => setPaginaAtual(p => Math.max(p - 1, 1))} disabled={paginaAtual === 1}>{'⮜'}</button>
+                            <span>Página {paginaAtual} de {totalPaginas}</span>
+                            <button onClick={() => setPaginaAtual(p => Math.min(p + 1, totalPaginas))} disabled={paginaAtual === totalPaginas}>{'⮞'}</button>
+                        </div>
+                    )}
                 </div>
             </div>
 
+            {/********************* Modais *******************/}
             {tipoModal && (
                 <div className="modal-overlay" onClick={fecharModal}>
                     <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
                         {tipoModal === 'excluir' ? (
                             <>
                                 <h2>Confirmar Exclusão</h2>
-                                <p>Deseja excluir a notícia <strong>{noticiaSelecionada?.texto}</strong>?</p>
-                                <button onClick={() => { handleExcluir(noticiaSelecionada!.id); fecharModal(); }}>Confirmar</button>
+                                <p>Deseja excluir a notícia <strong>"{noticiaSelecionada?.titulo}"</strong>?</p>
+                                <button onClick={handleExcluir}>Confirmar</button>
                                 <button onClick={fecharModal}>Cancelar</button>
                             </>
                         ) : tipoModal === 'visualizar' ? (
                             <>
-                                <h2>Visualizar Notícia</h2>
-                                <p><strong>ID:</strong> {noticiaSelecionada?.id}</p>
-                                <p><strong>Texto:</strong> {noticiaSelecionada?.texto}</p>
-                                <p><strong>Data:</strong> {noticiaSelecionada?.data}</p>
+                                <h2>{noticiaSelecionada?.titulo}</h2>
+                                <p><strong>Data de Publicação:</strong> {noticiaSelecionada?.data_publicacao ? new Date(noticiaSelecionada.data_publicacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : ''}</p>
+                                <hr/>
+                                <p>{noticiaSelecionada?.descricao}</p>
                                 <button onClick={fecharModal}>Fechar</button>
                             </>
-                        ) : (
+                        ) : ( // Criar ou Editar
                             <>
                                 <h2>{tipoModal === 'criar' ? 'Criar Nova Notícia' : 'Editar Notícia'}</h2>
                                 <form onSubmit={handleSalvarNoticia}>
-                                    <label>
-                                        Texto:
-                                        <textarea name="texto" defaultValue={noticiaSelecionada?.texto || ''} required />
+                                    <label> Título:
+                                        <input type="text" name="titulo" defaultValue={noticiaSelecionada?.titulo || ''} required />
                                     </label>
-                                    <label>
-                                        Data:
-                                        <input type="date" name="data" defaultValue={noticiaSelecionada?.data || ''} required />
+                                    <label> Descrição:
+                                        <textarea name="descricao" defaultValue={noticiaSelecionada?.descricao || ''} required />
+                                    </label>
+                                    <label> Data de Publicação:
+                                        <input type="date" name="data_publicacao" defaultValue={noticiaSelecionada?.data_publicacao || ''} required />
                                     </label>
                                     <button type="submit">Salvar</button>
                                     <button type="button" onClick={fecharModal}>Cancelar</button>

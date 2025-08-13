@@ -4,6 +4,7 @@ const Entidade = require('../models/Entidade');
 const sequelize = require('../config/database');
 const { Op } = require('sequelize');
 
+
 // GET / - Listar todos os funcionários com filtros e paginação
 const listarFuncionarios = async (req, res) => {
     try {
@@ -89,54 +90,42 @@ const buscarFuncionarioPorId = async (req, res) => {
 const criarFuncionario = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const { nome, cpf, telefone, tipoFuncionario, funcao, status, id_entidade } = req.body;
+        const { nome, cpf, telefone, id_registro, tipoFuncionario, funcao, status } = req.body;
         
-        // Permitir tanto 'tipoFuncionario' quanto 'funcao' do frontend
         const tipoFunc = tipoFuncionario || funcao;
 
         if (!nome || !cpf || !telefone || !tipoFunc) {
+            await t.rollback();
             return res.status(400).json({ 
-                erro: 'Campos obrigatórios: nome, cpf, telefone, tipoFuncionario (ou funcao)' 
+                erro: 'Campos obrigatórios: nome, cpf, telefone, tipoFuncionario (ou funcao).' 
             });
         }
-
-        let entidade;
-        if (id_entidade) {
-            // Se um id_entidade foi passado, atualizamos a entidade existente
-            [entidade] = await Entidade.upsert({
-                id: id_entidade,
-                nome, cpf, telefone
-            }, { transaction: t, returning: true });
-        } else {
-            // Se não, criamos uma nova entidade
-            entidade = await Entidade.create({
-                nome, cpf, telefone
-            }, { transaction: t });
-        }
-
-        // Criamos o funcionário referenciando a entidade
+        
+        // CORREÇÃO FINAL: Criando a entidade exatamente como a tabela
+        const entidade = await Entidade.create({
+            nome, 
+            cpf, 
+            telefone,
+            ID_Registro: id_registro // O model já mapeia para o nome da coluna correta
+        }, { transaction: t });
+        
+        // O resto da sua lógica para verificar duplicidade e criar o funcionário...
         const novoFuncionario = await FuncionarioTabela.create({
             ID_Entidade: entidade.id,
             Tipo_Funcionario: tipoFunc,
             Status: status || 'Ativo'
         }, { transaction: t });
         
-        // Se tudo deu certo, confirma a transação
         await t.commit();
         
-        // Busca o funcionário completo na view para retornar ao front-end
         const funcionarioCompleto = await Funcionario.findByPk(novoFuncionario.id);
         
-        // Adicionar campo 'funcao' para compatibilidade
-        const funcionarioCompatibilidade = {
+        res.status(201).json({
             ...funcionarioCompleto.toJSON(),
             funcao: funcionarioCompleto.tipoFuncionario
-        };
-        
-        res.status(201).json(funcionarioCompatibilidade);
+        });
 
     } catch (error) {
-        // Se algo deu errado, desfaz a transação
         await t.rollback();
         console.error('Erro ao criar funcionário:', error);
         res.status(500).json({ erro: 'Erro interno do servidor', detalhes: error.message });
@@ -148,26 +137,28 @@ const atualizarFuncionario = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const { nome, cpf, telefone, tipoFuncionario, funcao, status } = req.body;
+        const { nome, cpf, telefone, id_registro, tipoFuncionario, funcao, status } = req.body;
         
-        // Permitir tanto 'tipoFuncionario' quanto 'funcao' do frontend
         const tipoFunc = tipoFuncionario || funcao;
 
-        // Primeiro, buscar o funcionário na VIEW para pegar o id_entidade
         const funcionario = await Funcionario.findByPk(id);
         if (!funcionario) {
+            await t.rollback();
             return res.status(404).json({ erro: 'Funcionário não encontrado' });
         }
 
-        // Atualiza a entidade associada
+        // CORREÇÃO FINAL: Atualizando a entidade exatamente como a tabela
         await Entidade.update({
-            nome, cpf, telefone
+            nome, 
+            cpf, 
+            telefone,
+            ID_Registro: id_registro
         }, {
             where: { id: funcionario.id_entidade },
             transaction: t
         });
 
-        // Atualiza os dados específicos do funcionário
+        // O resto da sua lógica para atualizar o funcionário...
         await FuncionarioTabela.update({ 
             Tipo_Funcionario: tipoFunc,
             Status: status || 'Ativo'
@@ -180,13 +171,10 @@ const atualizarFuncionario = async (req, res) => {
 
         const funcionarioAtualizado = await Funcionario.findByPk(id);
         
-        // Adicionar campo 'funcao' para compatibilidade
-        const funcionarioCompatibilidade = {
+        res.json({
             ...funcionarioAtualizado.toJSON(),
             funcao: funcionarioAtualizado.tipoFuncionario
-        };
-        
-        res.json(funcionarioCompatibilidade);
+        });
 
     } catch (error) {
         await t.rollback();

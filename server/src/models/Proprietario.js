@@ -1,37 +1,33 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Entidade = sequelize.define('Entidade', {
+const Proprietario = sequelize.define('Proprietario', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
         field: 'ID'
     },
     nome: {
         type: DataTypes.STRING,
-        allowNull: false, // Supondo que seja obrigatório
         field: 'Nome'
     },
     cpf: {
         type: DataTypes.STRING,
-        allowNull: false, // Supondo que seja obrigatório
         field: 'CPF'
     },
     telefone: {
         type: DataTypes.STRING,
-        allowNull: false, // Supondo que seja obrigatório
         field: 'Telefone'
     },
-    id_registro: { // O nome do campo no model deve ser id_registro
+    quantidadeApartamentos: {
         type: DataTypes.INTEGER,
-        field: 'ID_Registro' // Mapeia para a coluna correta
+        field: 'Quantidade_Apartamentos'
     }
-    // O campo 'tipo' foi removido daqui
+    // O campo id_entidade foi removido daqui para corresponder à view
 }, {
-    tableName: 'Entidades',
+    tableName: 'vw_proprietarios_del', // O nome da sua view
     timestamps: false,
     freezeTableName: true
 });
 
-module.exports = Entidade;
+module.exports = Proprietario;

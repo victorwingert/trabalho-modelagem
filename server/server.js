@@ -18,6 +18,8 @@ const produtosRoutes = require('./src/routes/produtos');
 const pedidosRoutes = require('./src/routes/servicos');
 const moradorRoutes = require('./src/routes/moradores');
 const funcionarioRoutes = require('./src/routes/funcionarios');
+const proprietarioRoutes = require('./src/routes/proprietarios');
+const noticiasRoutes = require('./src/routes/noticias');
 // NOVA LINHA
 
 
@@ -28,6 +30,8 @@ app.use('/api/funcionarios', funcionarioRoutes);
 app.use('/api', authRoutes);
 app.use('/api', produtosRoutes);
 app.use('/api', pedidosRoutes); // Talvez renomear para /api/servicos?
+app.use('/api/proprietarios', proprietarioRoutes);
+app.use('/api/noticias', noticiasRoutes); 
 
 
 // Inicia o servidor

@@ -6,8 +6,9 @@ import TabelaNoticiasPage from './pages/TabelaNoticias';
 import TabelaPedidosPage from './pages/TabelaPedidos';
 import TabelaProdutosPage from './pages/TabelaProdutos';
 import TabelaFuncionariosPage from './pages/TabelaFuncionarios';
-import TabelaProprietariosPage from './pages/TabelaPedidos';
+import TabelaProprietariosPage from './pages/TabelaProprietarios';
 import TabelaMoradoresPage from './pages/TabelaMoradores';
+import TabelaBlocosPage from './pages/TabelaBlocos';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
@@ -44,6 +45,7 @@ function App() {
         <Route path="/tabelaMoradores" element={<TabelaMoradoresPage />} />
         <Route path="/tabelaFuncionarios" element={<TabelaFuncionariosPage />} />
         <Route path="/tabelaProprietarios" element={<TabelaProprietariosPage />} />
+        <Route path="/tabelaBlocos" element={<TabelaBlocosPage/>} />
 
         {/* Placeholders para as rotas futuras. */}
         {/*

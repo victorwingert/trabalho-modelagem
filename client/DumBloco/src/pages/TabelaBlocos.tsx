@@ -4,19 +4,17 @@ import type React from "react"
 import { useEffect, useState, useCallback } from "react"
 import SidebarNavigation from "../components/sidebar-navigation"
 
-// Interface para proprietário
-interface Proprietario {
-  id: number;
-  nome: string;
-  cpf: string;
-  telefone: string;
-  id_entidade: number;
-  quantidadeApartamentos?: number; // <-- ADICIONE ESTA LINHA
+// Interface para bloco
+interface Bloco {
+  id: number
+  nome_bloco: string
+  id_entidade: number
 
   // Campos retornados pela view (se houver)
-  nomeEntidade?: string;
-  tipoEntidade?: string;
+  nomeEntidade?: string
+  tipoEntidade?: string
 }
+
 type TipoModal = "criar" | "editar" | "excluir" | "visualizar" | null
 
 // Interface para parâmetros de consulta da API
@@ -45,13 +43,13 @@ interface OpcoesEntidades {
   tipo?: string
 }
 
-type TabelaProprietariosPageProps = {}
+type TabelaBlocosPageProps = {}
 
-const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
-  const [proprietarios, setProprietarios] = useState<Proprietario[]>([])
+const TabelaBlocosPage: React.FC<TabelaBlocosPageProps> = () => {
+  const [blocos, setBlocos] = useState<Bloco[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [tipoModal, setTipoModal] = useState<TipoModal>(null)
-  const [proprietarioSelecionado, setProprietarioSelecionado] = useState<Proprietario | null>(null)
+  const [blocoSelecionado, setBlocoSelecionado] = useState<Bloco | null>(null)
   const [sidebarAberta, setSidebarAberta] = useState<boolean>(false)
 
   // Estados para opções dos selects
@@ -62,7 +60,7 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
     pagina: 1,
     itensPorPagina: 8,
     termoPesquisa: "",
-    campoOrdenacao: "nome",
+    campoOrdenacao: "nome_bloco",
     direcaoOrdenacao: "asc",
     filtroEntidade: "",
   })
@@ -75,27 +73,27 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
 
   const abrirModalCriar = (): void => {
     setTipoModal("criar")
-    setProprietarioSelecionado(null)
+    setBlocoSelecionado(null)
   }
 
-  const abrirModalEditar = (proprietario: Proprietario): void => {
+  const abrirModalEditar = (bloco: Bloco): void => {
     setTipoModal("editar")
-    setProprietarioSelecionado(proprietario)
+    setBlocoSelecionado(bloco)
   }
 
-  const abrirModalExcluir = (proprietario: Proprietario): void => {
+  const abrirModalExcluir = (bloco: Bloco): void => {
     setTipoModal("excluir")
-    setProprietarioSelecionado(proprietario)
+    setBlocoSelecionado(bloco)
   }
 
-  const abrirModalVisualizar = (proprietario: Proprietario): void => {
+  const abrirModalVisualizar = (bloco: Bloco): void => {
     setTipoModal("visualizar")
-    setProprietarioSelecionado(proprietario)
+    setBlocoSelecionado(bloco)
   }
 
   const fecharModal = (): void => {
     setTipoModal(null)
-    setProprietarioSelecionado(null)
+    setBlocoSelecionado(null)
   }
 
   // Configuração da API
@@ -103,9 +101,9 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
 
   // ===== CHAMADAS PARA API =====
 
-  // Buscar proprietários
-  const buscarProprietarios = useCallback(
-    async (params: ParametrosConsulta): Promise<RespostaPaginada<Proprietario>> => {
+  // Buscar blocos
+  const buscarBlocos = useCallback(
+    async (params: ParametrosConsulta): Promise<RespostaPaginada<Bloco>> => {
       setLoading(true)
       setErro("")
 
@@ -115,12 +113,12 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
           pagina: params.pagina.toString(),
           itensPorPagina: params.itensPorPagina.toString(),
           termoPesquisa: params.termoPesquisa,
-          campoOrdenacao: params.campoOrdenacao || "nome",
+          campoOrdenacao: params.campoOrdenacao || "nome_bloco",
           direcaoOrdenacao: params.direcaoOrdenacao || "asc",
           filtroEntidade: params.filtroEntidade || "",
         })
 
-        const response = await fetch(`${API_BASE_URL}/proprietarios?${queryParams}`, {
+        const response = await fetch(`${API_BASE_URL}/blocos?${queryParams}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -131,14 +129,14 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
           throw new Error(`Erro na API: ${response.status} - ${response.statusText}`)
         }
 
-        const resultado: RespostaPaginada<Proprietario> = await response.json()
+        const resultado: RespostaPaginada<Bloco> = await response.json()
         setLoading(false)
         return resultado
       } catch (error) {
         setLoading(false)
-        const mensagemErro = error instanceof Error ? error.message : "Erro desconhecido ao buscar proprietários"
+        const mensagemErro = error instanceof Error ? error.message : "Erro desconhecido ao buscar blocos"
         setErro(mensagemErro)
-        console.error("Erro ao buscar proprietários:", error)
+        console.error("Erro ao buscar blocos:", error)
 
         // Retornar estrutura vazia em caso de erro
         return {
@@ -210,7 +208,7 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
   }, [])
 
   // ===== RESULTADO DA CONSULTA =====
-  const [resultadoConsulta, setResultadoConsulta] = useState<RespostaPaginada<Proprietario>>({
+  const [resultadoConsulta, setResultadoConsulta] = useState<RespostaPaginada<Bloco>>({
     dados: [],
     totalItens: 0,
     totalPaginas: 0,
@@ -225,11 +223,11 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
 
   // Executar consulta quando parâmetros mudarem
   useEffect(() => {
-    buscarProprietarios(parametrosConsulta).then((resultado) => {
+    buscarBlocos(parametrosConsulta).then((resultado) => {
       setResultadoConsulta(resultado)
-      setProprietarios(resultado.dados)
+      setBlocos(resultado.dados)
     })
-  }, [parametrosConsulta, buscarProprietarios])
+  }, [parametrosConsulta, buscarBlocos])
 
   // ===== FUNÇÕES DE NAVEGAÇÃO =====
   const irParaPagina = useCallback(
@@ -272,107 +270,100 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
   // ===== OPERAÇÕES CRUD =====
 
   // Tipo para dados de criação
-  type DadosCriacaoProprietario = {
-    nome: string
-    cpf: string
-    telefone: string
+  type DadosCriacaoBloco = {
+    nome_bloco: string
     id_entidade: number
   }
 
-  const criarProprietario = async (dadosProprietario: DadosCriacaoProprietario): Promise<void> => {
+  const criarBloco = async (dadosBloco: DadosCriacaoBloco): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/proprietarios`, {
+      const response = await fetch(`${API_BASE_URL}/blocos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dadosProprietario),
+        body: JSON.stringify(dadosBloco),
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Erro ao criar proprietário: ${response.status} - ${errorText}`)
+        throw new Error(`Erro ao criar bloco: ${response.status} - ${errorText}`)
       }
 
       // Recarregar dados
-      const resultado = await buscarProprietarios(parametrosConsulta)
+      const resultado = await buscarBlocos(parametrosConsulta)
       setResultadoConsulta(resultado)
-      setProprietarios(resultado.dados)
+      setBlocos(resultado.dados)
     } catch (error) {
-      console.error("Erro ao criar proprietário:", error)
-      setErro(error instanceof Error ? error.message : "Erro ao criar proprietário")
+      console.error("Erro ao criar bloco:", error)
+      setErro(error instanceof Error ? error.message : "Erro ao criar bloco")
       throw error
     }
   }
 
-  const editarProprietario = async (
-    id: number,
-    dadosProprietario: Partial<DadosCriacaoProprietario>,
-  ): Promise<void> => {
+  const editarBloco = async (id: number, dadosBloco: Partial<DadosCriacaoBloco>): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/proprietarios/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/blocos/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dadosProprietario),
+        body: JSON.stringify(dadosBloco),
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Erro ao editar proprietário: ${response.status} - ${errorText}`)
+        throw new Error(`Erro ao editar bloco: ${response.status} - ${errorText}`)
       }
 
       // Recarregar dados
-      const resultado = await buscarProprietarios(parametrosConsulta)
+      const resultado = await buscarBlocos(parametrosConsulta)
       setResultadoConsulta(resultado)
-      setProprietarios(resultado.dados)
+      setBlocos(resultado.dados)
     } catch (error) {
-      console.error("Erro ao editar proprietário:", error)
-      setErro(error instanceof Error ? error.message : "Erro ao editar proprietário")
+      console.error("Erro ao editar bloco:", error)
+      setErro(error instanceof Error ? error.message : "Erro ao editar bloco")
       throw error
     }
   }
 
-  const excluirProprietario = async (id: number): Promise<void> => {
+  const excluirBloco = async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/proprietarios/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/blocos/${id}`, {
         method: "DELETE",
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Erro ao excluir proprietário: ${response.status} - ${errorText}`)
+        throw new Error(`Erro ao excluir bloco: ${response.status} - ${errorText}`)
       }
 
       // Recarregar dados
-      const resultado = await buscarProprietarios(parametrosConsulta)
+      const resultado = await buscarBlocos(parametrosConsulta)
       setResultadoConsulta(resultado)
-      setProprietarios(resultado.dados)
+      setBlocos(resultado.dados)
     } catch (error) {
-      console.error("Erro ao excluir proprietário:", error)
-      setErro(error instanceof Error ? error.message : "Erro ao excluir proprietário")
+      console.error("Erro ao excluir bloco:", error)
+      setErro(error instanceof Error ? error.message : "Erro ao excluir bloco")
       throw error
     }
   }
 
-  const handleSalvarProprietario = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSalvarBloco = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
     const form = e.target as HTMLFormElement
     const formData = new FormData(form)
 
-    const dadosProprietario: DadosCriacaoProprietario = {
-      nome: formData.get("nome") as string,
-      cpf: formData.get("cpf") as string,
-      telefone: formData.get("telefone") as string,
+    const dadosBloco: DadosCriacaoBloco = {
+      nome_bloco: formData.get("nome_bloco") as string,
       id_entidade: Number.parseInt(formData.get("id_entidade") as string) || 1,
     }
 
     try {
       if (tipoModal === "criar") {
-        await criarProprietario(dadosProprietario)
-      } else if (tipoModal === "editar" && proprietarioSelecionado) {
-        await editarProprietario(proprietarioSelecionado.id, dadosProprietario)
+        await criarBloco(dadosBloco)
+      } else if (tipoModal === "editar" && blocoSelecionado) {
+        await editarBloco(blocoSelecionado.id, dadosBloco)
       }
       fecharModal()
     } catch (error) {
@@ -381,9 +372,9 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
   }
 
   const handleExcluir = async (): Promise<void> => {
-    if (proprietarioSelecionado) {
+    if (blocoSelecionado) {
       try {
-        await excluirProprietario(proprietarioSelecionado.id)
+        await excluirBloco(blocoSelecionado.id)
         fecharModal()
       } catch (error) {
         // Erro já foi tratado na função acima
@@ -394,16 +385,12 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
   return (
     <div className="pagina-tabelaUsuarios">
       {/********************* Sidebar *******************/}
-      <SidebarNavigation
-        sidebarAberta={sidebarAberta}
-        toggleSidebar={toggleSidebar}
-        currentPage="/tabelaProprietarios"
-      />
+      <SidebarNavigation sidebarAberta={sidebarAberta} toggleSidebar={toggleSidebar} currentPage="/tabelaBlocos" />
 
       {/********************* titulo *******************/}
       <div className="background-tabelaUsuarios">
         <div className="titulo-tabelaUsuarios">
-          <h1>Tabela de Proprietários</h1>
+          <h1>Tabela de Blocos</h1>
         </div>
 
         <div className="conteudo-tabelaUsuarios">
@@ -429,13 +416,13 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
           >
             <input
               type="text"
-              placeholder="Pesquisar por nome, CPF, telefone..."
+              placeholder="Pesquisar por nome do bloco..."
               value={termoPesquisaInput}
               onChange={(e) => setTermoPesquisaInput(e.target.value)}
               style={{ flex: 1 }}
             />
 
-            <button onClick={abrirModalCriar}>Adicionar Proprietário</button>
+            <button onClick={abrirModalCriar}>Adicionar Bloco</button>
           </div>
 
           {/********************* estatísticas *******************/}
@@ -448,7 +435,7 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
               color: "#666",
             }}
           >
-            <span>Total de proprietários: {resultadoConsulta.totalItens}</span>
+            <span>Total de blocos: {resultadoConsulta.totalItens}</span>
           </div>
 
           {/********************* tabela *******************/}
@@ -460,24 +447,9 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
                   {parametrosConsulta.campoOrdenacao === "id" &&
                     (parametrosConsulta.direcaoOrdenacao === "asc" ? "↑" : "↓")}
                 </th>
-                <th onClick={() => mudarOrdenacao("nome")} style={{ cursor: "pointer", minWidth: "200px" }}>
-                  Nome{" "}
-                  {parametrosConsulta.campoOrdenacao === "nome" &&
-                    (parametrosConsulta.direcaoOrdenacao === "asc" ? "↑" : "↓")}
-                </th>
-                <th onClick={() => mudarOrdenacao("cpf")} style={{ cursor: "pointer", minWidth: "140px" }}>
-                  CPF{" "}
-                  {parametrosConsulta.campoOrdenacao === "cpf" &&
-                    (parametrosConsulta.direcaoOrdenacao === "asc" ? "↑" : "↓")}
-                </th>
-                <th onClick={() => mudarOrdenacao("telefone")} style={{ cursor: "pointer", minWidth: "140px" }}>
-                  Telefone{" "}
-                  {parametrosConsulta.campoOrdenacao === "telefone" &&
-                    (parametrosConsulta.direcaoOrdenacao === "asc" ? "↑" : "↓")}
-                </th>
-                <th onClick={() => mudarOrdenacao("quantidadeApartamentos")} style={{ cursor: "pointer", minWidth: "140px" }}> {/* <-- CORREÇÃO AQUI */}
-                  Quantia{" "}
-                  {parametrosConsulta.campoOrdenacao === "quantidadeApartamentos" && /* <-- E AQUI */
+                <th onClick={() => mudarOrdenacao("nome_bloco")} style={{ cursor: "pointer", minWidth: "300px" }}>
+                  Nome do Bloco{" "}
+                  {parametrosConsulta.campoOrdenacao === "nome_bloco" &&
                     (parametrosConsulta.direcaoOrdenacao === "asc" ? "↑" : "↓")}
                 </th>
                 <th style={{ minWidth: "200px" }}>Ações</th>
@@ -486,42 +458,39 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
-                    Carregando proprietários...
+                  <td colSpan={3} style={{ textAlign: "center" }}>
+                    Carregando blocos...
                   </td>
                 </tr>
-              ) : proprietarios.length === 0 ? (
+              ) : blocos.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
+                  <td colSpan={3} style={{ textAlign: "center" }}>
                     {parametrosConsulta.termoPesquisa
-                      ? "Nenhum proprietário encontrado com os filtros aplicados"
-                      : "Nenhum proprietário cadastrado"}
+                      ? "Nenhum bloco encontrado com os filtros aplicados"
+                      : "Nenhum bloco cadastrado"}
                   </td>
                 </tr>
               ) : (
-                proprietarios.map((proprietario) => (
-                  <tr key={proprietario.id}>
-                    <td>{proprietario.id}</td>
-                    <td>{proprietario.nome}</td>
-                    <td>{proprietario.cpf}</td>
-                    <td>{proprietario.telefone}</td>
-                    <td>{proprietario.quantidadeApartamentos || 0}</td>
+                blocos.map((bloco) => (
+                  <tr key={bloco.id}>
+                    <td>{bloco.id}</td>
+                    <td>{bloco.nome_bloco}</td>
                     <td>
                       <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
                         <button
-                          onClick={() => abrirModalVisualizar(proprietario)}
+                          onClick={() => abrirModalVisualizar(bloco)}
                           style={{ fontSize: "12px", padding: "4px 8px" }}
                         >
                           Visualizar
                         </button>
                         <button
-                          onClick={() => abrirModalEditar(proprietario)}
+                          onClick={() => abrirModalEditar(bloco)}
                           style={{ fontSize: "12px", padding: "4px 8px" }}
                         >
                           Editar
                         </button>
                         <button
-                          onClick={() => abrirModalExcluir(proprietario)}
+                          onClick={() => abrirModalExcluir(bloco)}
                           style={{ fontSize: "12px", padding: "4px 8px" }}
                         >
                           Excluir
@@ -579,25 +548,21 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
           <div
             className="modal-conteudo"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            style={{ maxWidth: "600px", maxHeight: "90vh", overflowY: "auto" }}
+            style={{ maxWidth: "500px", maxHeight: "90vh", overflowY: "auto" }}
           >
-            <h2>{tipoModal === "criar" ? "Adicionar Proprietário" : "Editar Proprietário"}</h2>
+            <h2>{tipoModal === "criar" ? "Adicionar Bloco" : "Editar Bloco"}</h2>
 
-            <form onSubmit={handleSalvarProprietario}>
-              <div style={{ display: "grid", gap: "15px", gridTemplateColumns: "1fr 1fr" }}>
-                <div style={{ gridColumn: "span 2" }}>
-                  <label>Nome *</label>
-                  <input type="text" name="nome" required defaultValue={proprietarioSelecionado?.nome || ""} />
-                </div>
-
+            <form onSubmit={handleSalvarBloco}>
+              <div style={{ display: "grid", gap: "15px" }}>
                 <div>
-                  <label>CPF *</label>
-                  <input type="text" name="cpf" required defaultValue={proprietarioSelecionado?.cpf || ""} />
-                </div>
-
-                <div>
-                  <label>Telefone *</label>
-                  <input type="text" name="telefone" required defaultValue={proprietarioSelecionado?.telefone || ""} />
+                  <label>Nome do Bloco *</label>
+                  <input
+                    type="text"
+                    name="nome_bloco"
+                    required
+                    defaultValue={blocoSelecionado?.nome_bloco || ""}
+                    placeholder="Ex: Bloco A, Bloco B, Torre 1..."
+                  />
                 </div>
 
                 <input type="hidden" name="id_entidade" value="1" />
@@ -615,16 +580,16 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
       )}
 
       {/********************* Modal de Excluir *******************/}
-      {tipoModal === "excluir" && proprietarioSelecionado && (
+      {tipoModal === "excluir" && blocoSelecionado && (
         <div className="modal-overlay" onClick={fecharModal}>
           <div
             className="modal-conteudo"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             style={{ maxWidth: "400px" }}
           >
-            <h2>Excluir Proprietário</h2>
+            <h2>Excluir Bloco</h2>
             <p>
-              Tem certeza que deseja excluir o proprietário <strong>{proprietarioSelecionado.nome}</strong>?
+              Tem certeza que deseja excluir o bloco <strong>{blocoSelecionado.nome_bloco}</strong>?
             </p>
             <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
               <button type="button" onClick={fecharModal}>
@@ -639,22 +604,19 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
       )}
 
       {/********************* Modal de Visualizar *******************/}
-      {tipoModal === "visualizar" && proprietarioSelecionado && (
+      {tipoModal === "visualizar" && blocoSelecionado && (
         <div className="modal-overlay" onClick={fecharModal}>
           <div
             className="modal-conteudo"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            style={{ maxWidth: "500px" }}
+            style={{ maxWidth: "400px" }}
           >
-            <h2>Detalhes do Proprietário</h2>
+            <h2>Detalhes do Bloco</h2>
             <p>
-              <strong>Nome:</strong> {proprietarioSelecionado.nome}
+              <strong>ID:</strong> {blocoSelecionado.id}
             </p>
             <p>
-              <strong>CPF:</strong> {proprietarioSelecionado.cpf}
-            </p>
-            <p>
-              <strong>Telefone:</strong> {proprietarioSelecionado.telefone}
+              <strong>Nome do Bloco:</strong> {blocoSelecionado.nome_bloco}
             </p>
             <div style={{ marginTop: "20px", textAlign: "right" }}>
               <button type="button" onClick={fecharModal}>
@@ -668,4 +630,4 @@ const TabelaProprietariosPage: React.FC<TabelaProprietariosPageProps> = () => {
   )
 }
 
-export default TabelaProprietariosPage
+export default TabelaBlocosPage
