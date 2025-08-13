@@ -20,8 +20,7 @@ const moradorRoutes = require('./src/routes/moradores');
 const funcionarioRoutes = require('./src/routes/funcionarios');
 const proprietarioRoutes = require('./src/routes/proprietarios');
 const noticiasRoutes = require('./src/routes/noticias');
-// NOVA LINHA
-
+const condominioRoutes = require('./src/routes/condominio'); // <<< ADICIONE ESTA LINHA
 
 // Diz ao Express para usar um prefixo ÚNICO para cada conjunto de rotas.
 // Esta é a correção mais importante.
@@ -32,6 +31,7 @@ app.use('/api', produtosRoutes);
 app.use('/api', pedidosRoutes); // Talvez renomear para /api/servicos?
 app.use('/api/proprietarios', proprietarioRoutes);
 app.use('/api/noticias', noticiasRoutes); 
+app.use('/api/condominio', condominioRoutes); 
 
 
 // Inicia o servidor
